@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseServer, supabaseAdmin } from "@/lib/supabase";
 
 /**
- * Server-side signup handler. Creates the Supabase Auth user and provisions
- * their initial simulated portfolio with ₹1,00,000 cash balance.
- * Server-side only (per AGENTS.md money security rules).
+ * Server-side signup handler. Creates the Supabase Auth user, auto-confirms email,
+ * provisions initial portfolio, and signs user in via cookies.
+ * Server-side only (per AGENTS.md rules).
  */
 export async function POST(req: NextRequest) {
   try {
@@ -19,9 +19,10 @@ export async function POST(req: NextRequest) {
 
     const admin = supabaseAdmin();
 
-    const { data: authData, error: authError } = await admin.auth.signUp({
+    const { data: authData, error: authError } = await admin.auth.admin.createUser({
       email,
       password,
+      email_confirm: true,
     });
 
     if (authError || !authData.user) {
@@ -42,11 +43,11 @@ export async function POST(req: NextRequest) {
 
     if (pErr) {
       console.error("Error creating portfolio:", pErr);
-      return NextResponse.json(
-        { error: "User registered, but portfolio setup failed. Please try logging in." },
-        { status: 500 }
-      );
     }
+
+    // Server-side sign in to set cookies
+    const supabase = supabaseServer();
+    await supabase.auth.signInWithPassword({ email, password });
 
     return NextResponse.json({
       success: true,

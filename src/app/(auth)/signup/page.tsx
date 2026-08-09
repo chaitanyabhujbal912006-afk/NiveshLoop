@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabaseBrowser } from "@/lib/supabase-client";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -28,10 +27,6 @@ export default function SignupPage() {
 
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Signup failed");
-
-      const supabase = supabaseBrowser();
-      const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
-      if (loginErr) throw loginErr;
 
       setDone(true);
       setTimeout(() => { router.push("/dashboard"); router.refresh(); }, 1200);

@@ -123,4 +123,10 @@ INSERT INTO lessons (slug, title, body_md, order_index, unlocks_action) VALUES
   E'# What next?\n\n> **[PLACEHOLDER — NEEDS REAL CONTENT BEFORE LAUNCH]**\n\nYou''ve completed all 14 lessons and accumulated a real track record in the simulation. What does the path to real investing look like?\n\n## NiveshLoop will never handle real money\n\nThis is a deliberate constraint, not a limitation. The entire point of this tool is to build habits and understanding *before* real money is involved. Moving to real investing means opening an account with a SEBI-registered broker — not upgrading within this app.\n\n## What a regulated broker account looks like\n\nIn India, you need:\n1. **A Demat account** (holds your shares electronically) — most brokers open this for free\n2. **A trading account** (places orders) — bundled with the Demat account\n3. **Linked bank account** — for fund transfers\n\nSEBI-registered brokers include Zerodha, Groww, Upstox, Angel One, ICICI Direct, and others. Check SEBI''s registered intermediaries list before opening an account with anyone.\n\n## The transition checklist\n\n- [ ] Can you explain why you''re buying a specific stock (not just "it seems good")?\n- [ ] Have you set a stop-loss plan before clicking buy?\n- [ ] Is this money you can afford to lose entirely?\n- [ ] Have you diversified across at least 3 sectors?\n- [ ] Do you have an emergency fund that''s separate from your investing capital?\n\nIf you can answer yes to all five: you''re ready to start small with real money.\n\n---\n*This is the capstone lesson. No further unlock — just the reminder that this is where the simulation ends and the real thing begins.*',
   15,
   NULL
-);
+)
+ON CONFLICT (slug) DO UPDATE SET
+  title = EXCLUDED.title,
+  body_md = EXCLUDED.body_md,
+  order_index = EXCLUDED.order_index,
+  unlocks_action = EXCLUDED.unlocks_action;
+

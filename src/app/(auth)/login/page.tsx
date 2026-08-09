@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { supabaseBrowser } from "@/lib/supabase-client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,9 +18,14 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const supabase = supabaseBrowser();
-      const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
-      if (loginErr) throw loginErr;
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Login failed");
 
       router.push("/dashboard");
       router.refresh();

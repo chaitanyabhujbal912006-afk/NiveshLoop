@@ -95,3 +95,7 @@ create policy "own insights" on insights
 -- (server uses the service role key, which bypasses RLS).
 alter table lessons enable row level security;
 create policy "lessons readable" on lessons for select using (true);
+
+alter table price_cache enable row level security;
+create policy "price_cache readable" on price_cache for select using (true);
+
