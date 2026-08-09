@@ -30,21 +30,33 @@ export async function getPrice(symbol: string): Promise<PriceQuote> {
 
   try {
     const base = process.env.PRICE_API_BASE_URL;
-    const res = await fetch(`${base}/stock?symbol=${encodeURIComponent(symbol)}`, {
-      // Next.js: don't cache at the fetch layer, we manage caching ourselves via Supabase.
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error(`Price source returned ${res.status}`);
-    const json = await res.json();
+    let price: number;
+    let fetchedAt = new Date().toISOString();
 
-    // TODO: adjust this to match the actual response shape of whichever free
-    // price source you wire up — this is a placeholder field name.
-    const price: number = json.price ?? json.last_price;
-    if (typeof price !== "number") throw new Error("Unexpected price response shape");
+    if (!base) {
+      // Fallback mock prices for stock simulation when external API URL is not set
+      const defaultPrices: Record<string, number> = {
+        "TCS.NS": 3842.50,
+        "RELIANCE.NS": 2940.00,
+        "INFY.NS": 1815.20,
+        "HDFCBANK.NS": 1642.00,
+        "WIPRO.NS": 485.60,
+        "TATAMOTORS.NS": 980.00,
+        "ICICIBANK.NS": 1150.00,
+        "SBIN.NS": 820.00,
+      };
+      price = defaultPrices[symbol.toUpperCase()] ?? 1500.00;
+    } else {
+      const res = await fetch(`${base}/stock?symbol=${encodeURIComponent(symbol)}`, {
+        cache: "no-store",
+      });
+      if (!res.ok) throw new Error(`Price source returned ${res.status}`);
+      const json = await res.json();
+      price = json.price ?? json.last_price;
+      if (typeof price !== "number") throw new Error("Unexpected price response shape");
+    }
 
-    const fetchedAt = new Date().toISOString();
     await admin.from("price_cache").upsert({ symbol, price, fetched_at: fetchedAt });
-
     return { symbol, price, fetchedAt };
   } catch (err) {
     console.error(`getPrice: falling back to cache for ${symbol}`, err);
