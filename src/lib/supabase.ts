@@ -2,13 +2,7 @@ import { createBrowserClient, createServerClient, type CookieOptions } from "@su
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 
-/** Use in client components ("use client"). Respects the logged-in user's session. */
-export function supabaseBrowser() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+export { supabaseBrowser } from "./supabase-client";
 
 /** Use in server components / route handlers. Respects the logged-in user's session via cookies. */
 export function supabaseServer() {

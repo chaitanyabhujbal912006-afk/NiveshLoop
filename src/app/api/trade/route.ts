@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer, supabaseAdmin } from "@/lib/supabase";
 import { getPrice } from "@/lib/prices";
+import { calculateBuy, calculateSell } from "@/lib/trade-math";
 import type { TradeSide } from "@/types";
 
 interface TradeBody {
@@ -49,7 +50,6 @@ export async function POST(req: NextRequest) {
   }
 
   const quote = await getPrice(symbol);
-  const cost = quote.price * qty;
 
   const { data: existingHolding } = await admin
     .from("holdings")
@@ -59,41 +59,58 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (side === "buy") {
-    if (cost > Number(portfolio.cash_balance)) {
-      return NextResponse.json({ error: "Insufficient virtual cash" }, { status: 400 });
+    let result;
+    try {
+      result = calculateBuy({
+        currentCash: Number(portfolio.cash_balance),
+        existingQty: existingHolding?.qty ?? 0,
+        existingAvgPrice: existingHolding?.avg_price ?? 0,
+        buyQty: qty,
+        buyPrice: quote.price,
+      });
+    } catch (err) {
+      return NextResponse.json(
+        { error: err instanceof Error ? err.message : "Insufficient virtual cash" },
+        { status: 400 }
+      );
     }
-
-    const newQty = (existingHolding?.qty ?? 0) + qty;
-    const newAvgPrice = existingHolding
-      ? (existingHolding.qty * existingHolding.avg_price + cost) / newQty
-      : quote.price;
 
     await admin.from("holdings").upsert({
       portfolio_id: portfolio.id,
       symbol,
-      qty: newQty,
-      avg_price: newAvgPrice,
+      qty: result.newQty,
+      avg_price: result.newAvgPrice,
       updated_at: new Date().toISOString(),
     });
 
     await admin
       .from("portfolios")
-      .update({ cash_balance: Number(portfolio.cash_balance) - cost })
+      .update({ cash_balance: result.newCash })
       .eq("id", portfolio.id);
   } else {
-    if (!existingHolding || existingHolding.qty < qty) {
-      return NextResponse.json({ error: "Not enough shares to sell" }, { status: 400 });
+    let result;
+    try {
+      result = calculateSell({
+        currentCash: Number(portfolio.cash_balance),
+        existingQty: existingHolding?.qty ?? 0,
+        sellQty: qty,
+        sellPrice: quote.price,
+      });
+    } catch (err) {
+      return NextResponse.json(
+        { error: err instanceof Error ? err.message : "Not enough shares to sell" },
+        { status: 400 }
+      );
     }
 
-    const remainingQty = existingHolding.qty - qty;
     await admin
       .from("holdings")
-      .update({ qty: remainingQty, updated_at: new Date().toISOString() })
+      .update({ qty: result.remainingQty, updated_at: new Date().toISOString() })
       .eq("id", existingHolding.id);
 
     await admin
       .from("portfolios")
-      .update({ cash_balance: Number(portfolio.cash_balance) + cost })
+      .update({ cash_balance: result.newCash })
       .eq("id", portfolio.id);
   }
 
