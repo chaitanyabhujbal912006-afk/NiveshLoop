@@ -1,5 +1,7 @@
 "use client";
 
+import { motion } from "framer-motion";
+
 interface Transaction {
   id: string;
   symbol: string;
@@ -10,26 +12,39 @@ interface Transaction {
   created_at: string;
 }
 
+/**
+ * Transaction ledger — the central register of the passbook.
+ * Every row carries the same rhythm as LessonEntry: date, description,
+ * amount. The two types interleave into one continuous record.
+ */
 export function TransactionHistory({ transactions }: { transactions: Transaction[] }) {
   if (transactions.length === 0) {
     return (
-      <div className="py-8 text-center text-sm text-muted font-body border border-dashed border-rule/30 rounded-sm">
-        No transactions recorded yet. Search a symbol above to place your first trade!
+      <div className="py-10 text-center border border-dashed border-rule/30 rounded-sm">
+        <p className="font-body text-sm text-ink/70 mb-1">No trades yet.</p>
+        <p className="font-body text-xs text-muted">
+          Use the Trade tab to place your first order.
+        </p>
       </div>
     );
   }
 
   return (
     <div className="border border-rule/30 rounded-sm overflow-hidden bg-paper">
-      <div className="px-5 py-3 border-b border-rule/30 flex justify-between items-baseline">
-        <span className="font-display text-sm font-semibold text-ink">Transaction History</span>
-        <span className="font-mono text-xs text-muted">{transactions.length} trades</span>
+      {/* Column headers */}
+      <div className="grid grid-cols-[auto_1fr_auto] gap-4 px-5 py-2.5 border-b border-rule/25 bg-rule/[0.03]">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted w-20">Date</span>
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted">Entry</span>
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted text-right">Amount</span>
       </div>
+
       <div className="divide-y divide-rule/15">
-        {transactions.map((tx) => {
+        {transactions.map((tx, i) => {
           const dateStr = new Date(tx.created_at).toLocaleDateString("en-IN", {
             day: "numeric",
             month: "short",
+          });
+          const timeStr = new Date(tx.created_at).toLocaleTimeString("en-IN", {
             hour: "2-digit",
             minute: "2-digit",
           });
@@ -37,29 +52,53 @@ export function TransactionHistory({ transactions }: { transactions: Transaction
           const isBuy = tx.side === "buy";
 
           return (
-            <div key={tx.id} className="flex items-center gap-4 px-5 py-3.5 text-sm">
-              <span className="font-mono text-xs text-muted w-20 flex-shrink-0">{dateStr}</span>
-              <div className="flex-1">
-                <span className="font-medium text-ink">
-                  {isBuy ? "Bought" : "Sold"} {tx.qty} × {tx.symbol}
-                </span>
-                {tx.had_stop_loss && (
-                  <span className="ml-2 text-xs font-mono text-muted bg-rule/10 px-1.5 py-0.5 rounded-sm">
-                    Stop-loss
+            <motion.div
+              key={tx.id}
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.04 }}
+              className="grid grid-cols-[auto_1fr_auto] gap-4 px-5 py-3.5 hover:bg-rule/[0.025] transition-colors"
+            >
+              {/* Date */}
+              <div className="w-20 shrink-0">
+                <p className="font-mono text-xs text-muted tabular-nums">{dateStr}</p>
+                <p className="font-mono text-[10px] text-muted/60 tabular-nums">{timeStr}</p>
+              </div>
+
+              {/* Description */}
+              <div className="min-w-0">
+                <p className="font-body text-sm text-ink">
+                  {isBuy ? "Bought" : "Sold"}{" "}
+                  <span className="font-mono text-sm">{tx.qty} × {tx.symbol}</span>
+                </p>
+                <div className="flex flex-wrap gap-2 mt-0.5">
+                  <span className="font-mono text-[10px] text-muted">
+                    @ ₹{Number(tx.price).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} · market order
                   </span>
-                )}
+                  {tx.had_stop_loss && (
+                    <span className="font-mono text-[10px] text-muted bg-rule/10 px-1.5 py-0.5 rounded-sm border border-rule/20">
+                      Stop-loss
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="font-mono tabular-nums text-right">
-                <span className={isBuy ? "text-loss font-medium" : "text-gain font-medium"}>
+
+              {/* Amount */}
+              <div className="text-right shrink-0">
+                <p className={`font-mono tabular-nums text-sm font-medium ${isBuy ? "text-loss" : "text-gain"}`}>
                   {isBuy ? "−" : "+"}₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-                <span className="block text-xs text-muted">
-                  @ ₹{Number(tx.price).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
+                </p>
               </div>
-            </div>
+            </motion.div>
           );
         })}
+      </div>
+
+      {/* Running count footer */}
+      <div className="px-5 py-2.5 border-t border-rule/20 bg-rule/[0.02] flex justify-end">
+        <span className="font-mono text-[10px] text-muted uppercase tracking-widest">
+          {transactions.length} {transactions.length === 1 ? "transaction" : "transactions"} · simulated only
+        </span>
       </div>
     </div>
   );
