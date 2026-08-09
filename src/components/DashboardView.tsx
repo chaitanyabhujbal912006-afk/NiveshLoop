@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabaseBrowser } from "@/lib/supabase-client";
 import { SymbolSearch } from "./SymbolSearch";
@@ -9,6 +10,7 @@ import { TradeTicket } from "./TradeTicket";
 import { TransactionHistory } from "./TransactionHistory";
 import { InkNumber } from "./InkNumber";
 import { Stamp } from "./Stamp";
+import { hasUnlocked } from "@/lib/unlocks";
 import type { PriceQuote, TradeSide } from "@/types";
 
 interface HoldingItem {
@@ -52,6 +54,9 @@ export function DashboardView({
   const [selectedQuote, setSelectedQuote] = useState<PriceQuote | null>(null);
   const [tradeSide, setTradeSide] = useState<TradeSide>("buy");
   const [tradeStatus, setTradeStatus] = useState<{ success?: boolean; message?: string } | null>(null);
+
+  // first_trade gate — trading is locked until 'what-is-a-stock' is complete
+  const canTrade = hasUnlocked(completedLessonSlugs, "first_trade");
   const [tradeLoading, setTradeLoading] = useState(false);
 
   async function handleSignOut() {
@@ -104,9 +109,9 @@ export function DashboardView({
   const startingCash = 100000;
   const pnl = totalPortfolioValuation - startingCash;
 
-  const TABS: { id: Tab; label: string }[] = [
+  const TABS: { id: Tab; label: string; locked?: boolean }[] = [
     { id: "ledger", label: "Ledger" },
-    { id: "trade", label: "Trade" },
+    { id: "trade", label: canTrade ? "Trade" : "Trade 🔒", locked: !canTrade },
     { id: "insights", label: "Insights" },
   ];
 
@@ -122,12 +127,20 @@ export function DashboardView({
               </p>
               <p className="font-display text-sm text-ink font-medium">{userEmail}</p>
             </div>
-            <button
-              onClick={handleSignOut}
-              className="font-mono text-xs text-muted hover:text-stamp border border-rule/25 px-3 py-1.5 rounded-sm transition-colors"
-            >
-              Sign out
-            </button>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/lessons"
+                className="font-mono text-xs text-muted hover:text-ink border border-rule/25 px-3 py-1.5 rounded-sm transition-colors"
+              >
+                Lessons {!canTrade && "🔒"}
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="font-mono text-xs text-muted hover:text-stamp border border-rule/25 px-3 py-1.5 rounded-sm transition-colors"
+              >
+                Sign out
+              </button>
+            </div>
           </div>
 
           {/* Balance row */}
@@ -282,6 +295,27 @@ export function DashboardView({
               transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
               style={{ transformStyle: "preserve-3d", perspective: 1000 }}
             >
+              {/* ── FIRST_TRADE GATE ─────────────────────────────────── */}
+              {!canTrade ? (
+                <div className="border border-dashed border-rule/35 p-10 text-center max-w-sm mx-auto mt-4">
+                  <p className="font-display text-xl font-semibold text-ink mb-2">
+                    Trading is locked
+                  </p>
+                  <p className="font-body text-sm text-ink/70 mb-6 leading-relaxed">
+                    Complete <strong>Lesson 1 — What is a stock?</strong> to unlock
+                    your trade ticket. The lesson takes about 4 minutes.
+                  </p>
+                  <Link
+                    href="/lessons/what-is-a-stock"
+                    className="inline-flex items-center gap-2 bg-stamp text-paper px-6 py-3 font-body font-medium text-sm hover:opacity-90 transition-opacity"
+                  >
+                    Go to Lesson 1 →
+                  </Link>
+                  <p className="mt-4 font-mono text-[10px] text-muted uppercase tracking-widest">
+                    Unlocks automatically on completion
+                  </p>
+                </div>
+              ) : (
               <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8">
                 <SymbolSearch
                   onSelectQuote={(quote) => {
@@ -348,8 +382,10 @@ export function DashboardView({
                   )}
                 </div>
               </div>
+              )} {/* end canTrade ternary */}
             </motion.div>
           )}
+
 
           {activeTab === "insights" && (
             <motion.div

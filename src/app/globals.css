@@ -1,154 +1,244 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,700&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── PAPER TEXTURE ───────────────────────────────────────────────────── */
-/* A near-invisible grain: ~2–3% opacity, barely perceptible on screen   */
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAPER TEXTURE — SVG grain at 2-3% opacity
+   ═══════════════════════════════════════════════════════════════════════════ */
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   -webkit-font-smoothing: antialiased;
   background-color: #E9EFE7;
   color: #1E2A44;
   position: relative;
+  overflow-x: hidden;
 }
 
+/* ── Grain overlay ─ */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 9999;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.028'/%3E%3C/svg%3E");
   background-repeat: repeat;
 }
 
-/* ── TABULAR NUMERALS ────────────────────────────────────────────────── */
-/* Every rupee figure anywhere, monospaced + tabular — zero exceptions   */
+/* ═══════════════════════════════════════════════════════════════════════════
+   TABULAR NUMERALS — mandatory on every money figure
+   ═══════════════════════════════════════════════════════════════════════════ */
 .font-mono {
   font-variant-numeric: tabular-nums;
 }
 
-/* ── SVG INK-BLEED FILTER ────────────────────────────────────────────── */
-/* Applied to stamp SVGs to create the hand-inked edge bleed effect      */
-.stamp-filter {
-  filter: url(#ink-bleed);
-}
-
-/* ── STAMP PRESS ANIMATION ───────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   STAMP PRESS ANIMATION
+   ═══════════════════════════════════════════════════════════════════════════ */
 @keyframes stamp-press {
-  0%   { transform: scale(1.4) rotate(var(--stamp-rotate, -6deg)); opacity: 0; }
-  60%  { transform: scale(0.97) rotate(var(--stamp-rotate, -6deg)); opacity: 1; }
-  80%  { transform: scale(1.01) rotate(var(--stamp-rotate, -6deg)); opacity: 1; }
-  100% { transform: scale(1)    rotate(var(--stamp-rotate, -6deg)); opacity: 1; }
+  0%   { transform: scale(1.5) rotate(var(--stamp-r, -6deg)); opacity: 0; }
+  55%  { transform: scale(0.96) rotate(var(--stamp-r, -6deg)); opacity: 1; }
+  75%  { transform: scale(1.02) rotate(var(--stamp-r, -6deg)); opacity: 1; }
+  100% { transform: scale(1)    rotate(var(--stamp-r, -6deg)); opacity: 1; }
 }
 
-.stamp-animate {
-  animation: stamp-press 180ms cubic-bezier(0.25, 0, 0, 1) forwards;
+.stamp-press {
+  animation: stamp-press 200ms cubic-bezier(0.25, 0, 0, 1) forwards;
 }
 
-/* ── PAGE TURN (CSS 3D) ──────────────────────────────────────────────── */
-@keyframes page-leave {
-  0%   { transform: perspective(1200px) rotateY(0deg) skewY(0deg); opacity: 1; transform-origin: left center; }
-  100% { transform: perspective(1200px) rotateY(-20deg) skewY(-2deg); opacity: 0; transform-origin: left center; }
+@media (prefers-reduced-motion: reduce) {
+  .stamp-press { animation: none; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   INK BLEED PULSE — highlights on number changes
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes ink-gain {
+  0%   { background: transparent; }
+  25%  { background: rgba(47,107,79,0.14); }
+  100% { background: transparent; }
+}
+@keyframes ink-loss {
+  0%   { background: transparent; }
+  25%  { background: rgba(166,73,63,0.14); }
+  100% { background: transparent; }
+}
+.ink-gain { animation: ink-gain 500ms ease-out; }
+.ink-loss { animation: ink-loss 500ms ease-out; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE TURN 3D
+   ═══════════════════════════════════════════════════════════════════════════ */
 @keyframes page-enter {
-  0%   { transform: perspective(1200px) rotateY(20deg) skewY(2deg); opacity: 0; transform-origin: left center; }
-  100% { transform: perspective(1200px) rotateY(0deg) skewY(0deg); opacity: 1; transform-origin: left center; }
+  from { transform: perspective(1400px) rotateY(22deg) skewY(1.5deg); opacity: 0; }
+  to   { transform: perspective(1400px) rotateY(0deg)  skewY(0deg);   opacity: 1; }
 }
-
-.page-leaving {
-  animation: page-leave 260ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+@keyframes page-leave {
+  from { transform: perspective(1400px) rotateY(0deg)   skewY(0deg);    opacity: 1; }
+  to   { transform: perspective(1400px) rotateY(-22deg) skewY(-1.5deg); opacity: 0; }
 }
-
-.page-entering {
-  animation: page-enter 260ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .page-leaving, .page-entering {
-    animation: none;
-    opacity: 1;
-  }
-  .stamp-animate {
-    animation: none;
-  }
+  .page-enter, .page-leave { animation: none; opacity: 1; }
 }
 
-/* ── INK-FLOW NUMBER COUNTING ────────────────────────────────────────── */
-@keyframes ink-pulse-gain {
-  0%   { background-color: transparent; }
-  20%  { background-color: rgba(47, 107, 79, 0.12); }
-  100% { background-color: transparent; }
+/* ═══════════════════════════════════════════════════════════════════════════
+   HERO TICKER — scrolling ledger tape
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
-
-@keyframes ink-pulse-loss {
-  0%   { background-color: transparent; }
-  20%  { background-color: rgba(166, 73, 63, 0.12); }
-  100% { background-color: transparent; }
-}
-
-.ink-pulse-gain {
-  animation: ink-pulse-gain 400ms ease-out forwards;
-}
-
-.ink-pulse-loss {
-  animation: ink-pulse-loss 400ms ease-out forwards;
-}
-
-/* ── COOLDOWN RING ───────────────────────────────────────────────────── */
-@keyframes ring-fill {
-  from { stroke-dashoffset: 100; }
-  to   { stroke-dashoffset: 0; }
-}
-
-.cooldown-ring {
-  stroke-dasharray: 100;
-  stroke-dashoffset: 100;
-  animation: ring-fill var(--ring-duration, 11s) linear forwards;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cooldown-ring {
-    animation: none;
-    stroke-dashoffset: 0;
-  }
-}
-
-/* ── LEDGER RULES ────────────────────────────────────────────────────── */
-.ledger-row {
-  @apply flex items-center gap-4 px-5 py-3.5 border-b border-rule/15 last:border-b-0;
-}
-
-/* ── FOCUS RINGS ─────────────────────────────────────────────────────── */
-:focus-visible {
-  outline: 2px solid rgba(140, 47, 57, 0.5);
-  outline-offset: 2px;
-  border-radius: 2px;
-}
-
-/* ── SCROLL SNAP (mobile swipe pages) ───────────────────────────────── */
-.page-snap-container {
-  scroll-snap-type: x mandatory;
-  overflow-x: auto;
+.ticker-track {
   display: flex;
-  -webkit-overflow-scrolling: touch;
+  width: max-content;
+  animation: ticker-scroll 24s linear infinite;
+}
+.ticker-track:hover { animation-play-state: paused; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TORN PAPER DIVIDER (SVG path used via mask)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.torn-top {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1440' height='24'%3E%3Cpath d='M0,20 C60,8 120,22 180,14 C240,6 300,20 360,12 C420,4 480,18 540,10 C600,2 660,16 720,8 C780,0 840,18 900,12 C960,6 1020,20 1080,14 C1140,8 1200,22 1260,16 C1320,10 1380,20 1440,15 L1440,24 L0,24 Z' fill='black'/%3E%3C/svg%3E");
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
+}
+.torn-bottom {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1440' height='24'%3E%3Cpath d='M0,4 C60,14 120,2 180,10 C240,18 300,4 360,12 C420,20 480,6 540,14 C600,22 660,8 720,16 C780,24 840,6 900,12 C960,18 1020,4 1080,10 C1140,16 1200,2 1260,8 C1320,14 1380,4 1440,8 L1440,0 L0,0 Z' fill='black'/%3E%3C/svg%3E");
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
 }
 
-.page-snap-item {
-  scroll-snap-align: start;
-  flex-shrink: 0;
-  width: 100%;
+/* ═══════════════════════════════════════════════════════════════════════════
+   FLOATING LEDGER LINES BG (editorial texture)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.ledger-bg {
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 47px,
+    rgba(92, 122, 99, 0.10) 47px,
+    rgba(92, 122, 99, 0.10) 48px
+  );
 }
 
-/* ── GLOBAL FORM ELEMENTS ────────────────────────────────────────────── */
-input, select, textarea {
+/* ═══════════════════════════════════════════════════════════════════════════
+   INK UNDERLINE — wobbly hand-drawn effect
+   ═══════════════════════════════════════════════════════════════════════════ */
+.ink-underline {
+  position: relative;
+  display: inline-block;
+}
+.ink-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: -2px;
+  right: -2px;
+  height: 3px;
+  background: #8C2F39;
+  border-radius: 1px;
+  opacity: 0.75;
+  clip-path: polygon(
+    0% 60%, 3% 20%, 6% 80%, 9% 30%, 12% 70%, 15% 20%,
+    18% 85%, 21% 35%, 24% 75%, 27% 25%, 30% 70%, 33% 30%,
+    36% 80%, 39% 20%, 42% 75%, 45% 35%, 48% 80%, 51% 25%,
+    54% 70%, 57% 30%, 60% 75%, 63% 25%, 66% 80%, 69% 35%,
+    72% 70%, 75% 20%, 78% 80%, 81% 30%, 84% 75%, 87% 25%,
+    90% 70%, 93% 30%, 96% 80%, 100% 40%,
+    100% 100%, 0% 100%
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COUNTER / INK FLOW number
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes counter-flash {
+  0%   { opacity: 0.4; }
+  50%  { opacity: 1; }
+  100% { opacity: 1; }
+}
+.counter-flash { animation: counter-flash 300ms ease-out; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ENTRY STAGGER — slide-in for ledger rows
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes row-in {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.row-in {
+  animation: row-in 0.35s cubic-bezier(0.25,0,0.2,1) both;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GIANT HEADLINE — clamp-based fluid type scale
+   ═══════════════════════════════════════════════════════════════════════════ */
+.display-giant {
+  font-size: clamp(3.5rem, 10vw, 9rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+}
+
+.display-xl {
+  font-size: clamp(2.5rem, 6vw, 6rem);
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+
+.display-lg {
+  font-size: clamp(1.8rem, 4vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ROTATED SIDEBAR LABELS (editorial layout)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.label-rotated {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CURSOR UNDERLINE ON INPUTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+.ledger-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid rgba(92, 122, 99, 0.5);
+  border-radius: 0;
+  outline: none;
+  padding: 8px 0;
+  font-family: 'IBM Plex Mono', monospace;
   font-variant-numeric: tabular-nums;
+  transition: border-color 0.2s;
+}
+.ledger-input:focus {
+  border-bottom-color: #8C2F39;
 }
 
-/* ── SELECTION ───────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   FOCUS / SELECTION
+   ═══════════════════════════════════════════════════════════════════════════ */
+:focus-visible {
+  outline: 2px solid rgba(140, 47, 57, 0.45);
+  outline-offset: 3px;
+}
+
 ::selection {
-  background-color: rgba(140, 47, 57, 0.15);
+  background: rgba(140, 47, 57, 0.18);
   color: #1E2A44;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE SCROLL SNAP
+   ═══════════════════════════════════════════════════════════════════════════ */
+.snap-x { scroll-snap-type: x mandatory; }
+.snap-start { scroll-snap-align: start; }
