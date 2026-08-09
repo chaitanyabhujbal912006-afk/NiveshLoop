@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseServer, supabaseAdmin } from "@/lib/supabase";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { supabaseAdmin } from "@/lib/supabase";
 
 /**
- * Server-side signup handler. Creates the Supabase Auth user, auto-confirms email,
- * provisions initial portfolio, and signs user in via cookies.
- * Server-side only (per AGENTS.md rules).
+ * Server-side signup handler with auto-confirm and official @supabase/ssr cookies.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -45,15 +44,37 @@ export async function POST(req: NextRequest) {
       console.error("Error creating portfolio:", pErr);
     }
 
-    // Server-side sign in to set cookies
-    const supabase = supabaseServer();
-    await supabase.auth.signInWithPassword({ email, password });
-
-    return NextResponse.json({
+    // Log user in and set cookies on response
+    let response = NextResponse.json({
       success: true,
       user: { id: authData.user.id, email: authData.user.email },
     });
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return req.cookies.get(name)?.value;
+          },
+          set(name: string, value: string, options: CookieOptions) {
+            req.cookies.set({ name, value, ...options });
+            response.cookies.set({ name, value, ...options });
+          },
+          remove(name: string, options: CookieOptions) {
+            req.cookies.set({ name, value: "", ...options });
+            response.cookies.set({ name, value: "", ...options });
+          },
+        },
+      }
+    );
+
+    await supabase.auth.signInWithPassword({ email, password });
+
+    return response;
   } catch (err) {
+    console.error("Signup API error:", err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Unexpected registration error." },
       { status: 500 }

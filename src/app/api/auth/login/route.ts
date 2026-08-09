@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabase";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
 /**
- * Server-side login handler. Signs the user in and sets session cookies.
- * Server-side only for security & reliability across all network environments.
+ * Server-side login handler using official @supabase/ssr Route Handler cookie pattern.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -16,7 +15,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const supabase = supabaseServer();
+    let response = NextResponse.json({ success: true });
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return req.cookies.get(name)?.value;
+          },
+          set(name: string, value: string, options: CookieOptions) {
+            req.cookies.set({ name, value, ...options });
+            response.cookies.set({ name, value, ...options });
+          },
+          remove(name: string, options: CookieOptions) {
+            req.cookies.set({ name, value: "", ...options });
+            response.cookies.set({ name, value: "", ...options });
+          },
+        },
+      }
+    );
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -29,11 +49,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      user: { id: data.user.id, email: data.user.email },
-    });
+    return response;
   } catch (err) {
+    console.error("Login API error:", err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Unexpected login error." },
       { status: 500 }
