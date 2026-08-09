@@ -1,56 +1,85 @@
+import { Stamp } from "@/components/Stamp";
+
 export default function HomePage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-20">
-      <p className="font-body text-sm uppercase tracking-widest text-muted mb-4">
+    <main className="mx-auto max-w-2xl px-6 py-20">
+      <p className="font-body text-xs uppercase tracking-[0.2em] text-muted mb-6">
         Free · No ads · Simulated money only
       </p>
 
-      <h1 className="font-display text-5xl leading-tight text-primary-dark mb-6">
-        Learn to invest by actually investing —{" "}
-        <span className="text-accent">with money that isn't real.</span>
+      <h1 className="font-display text-4xl sm:text-5xl leading-[1.15] text-ink mb-6">
+        A passbook for learning to invest —
+        <br />
+        <span className="text-stamp">every entry earned, nothing simulated about the lesson.</span>
       </h1>
 
-      <p className="text-lg text-foreground/80 mb-12 max-w-xl">
-        Most places teach you the theory, then leave you to figure out the doing.
-        NiveshLoop connects the two: every lesson ends with a real simulated trade,
-        and every few trades, we show you the patterns in how you're actually
-        investing — not just your returns.
+      <p className="font-body text-lg text-ink/75 mb-14 max-w-lg">
+        Most places teach the theory, then leave you to figure out the doing.
+        Here, every lesson and every trade lives in the same ledger — you read,
+        you act with ₹1,00,000 in fake money, and every so often we hand the
+        page back and show you the pattern in how you're actually investing.
       </p>
 
-      {/* Signature element: the loop itself, since it's the whole product thesis */}
-      <div className="flex items-center gap-3 mb-14 font-display text-lg">
-        <LoopStep label="Learn" />
-        <Arrow />
-        <LoopStep label="Simulate" />
-        <Arrow />
-        <LoopStep label="Reflect" />
-        <Arrow />
-        <span className="text-muted text-sm font-body">back to Learn</span>
+      <div className="border border-rule/30 rounded-sm mb-14 overflow-hidden bg-paper">
+        <div className="px-5 py-3 border-b border-rule/30 flex justify-between items-baseline">
+          <p className="font-display text-sm text-ink">Your passbook</p>
+          <p className="font-mono text-xs text-muted">Page 1</p>
+        </div>
+
+        <LedgerRow date="Day 1" description="Lesson — What is a stock?" stamped />
+        <LedgerRow date="Day 1" description="Bought 1 × TCS" amount="−₹3,842.00" negative />
+        <LedgerRow date="Day 6" description="Lesson — Stop-losses" stamped />
+        <LedgerRow date="Day 14" description="Reflection unlocked — 3 fast exits noticed" muted />
       </div>
 
       <a
         href="/signup"
-        className="inline-block bg-primary text-background px-6 py-3 rounded-sm font-body font-medium hover:bg-primary-dark transition-colors"
+        className="inline-block bg-stamp text-paper px-7 py-3 rounded-sm font-body font-medium hover:opacity-90 transition-opacity"
       >
-        Start with ₹1,00,000 in fake money
+        Open your passbook — start with ₹1,00,000 fake
       </a>
 
-      <p className="mt-6 text-sm text-muted max-w-md">
-        Simulated portfolio only. Prices are delayed ~15 minutes and sourced for
-        educational use. Nothing here is investment advice.
+      <p className="mt-6 font-body text-sm text-muted max-w-md">
+        Simulated portfolio only. Prices are delayed ~15 minutes and sourced
+        for educational use. Nothing here is investment advice.
       </p>
     </main>
   );
 }
 
-function LoopStep({ label }: { label: string }) {
+function LedgerRow({
+  date,
+  description,
+  amount,
+  stamped,
+  negative,
+  muted,
+}: {
+  date: string;
+  description: string;
+  amount?: string;
+  stamped?: boolean;
+  negative?: boolean;
+  muted?: boolean;
+}) {
   return (
-    <div className="border border-primary/30 rounded-sm px-4 py-2 text-primary-dark">
-      {label}
+    <div className="flex items-center gap-4 px-5 py-3.5 border-b border-rule/15 last:border-b-0">
+      {stamped !== undefined ? (
+        <div className="scale-[0.55] -ml-2">
+          <Stamp label={description} earned={stamped} />
+        </div>
+      ) : (
+        <span className="w-11 shrink-0" />
+      )}
+      <span className="font-mono text-xs text-muted w-14 shrink-0">{date}</span>
+      <span className={`font-body text-sm flex-1 ${muted ? "text-muted" : "text-ink"}`}>
+        {description}
+      </span>
+      {amount && (
+        <span className={`font-mono tabular-nums text-sm ${negative ? "text-loss" : "text-gain"}`}>
+          {amount}
+        </span>
+      )}
     </div>
   );
-}
-
-function Arrow() {
-  return <span className="text-muted">→</span>;
 }

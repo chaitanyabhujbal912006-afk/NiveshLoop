@@ -6,6 +6,8 @@ Read these before writing any code, in this order:
 - @docs/PRD.md — what we're building and why, and what's explicitly out of scope
 - @docs/ARCHITECTURE.md — stack, data model, API design, folder structure
 - @docs/PHASES.md — the build order. Work one phase at a time, in order.
+- @docs/LOGIC.md — the exact lesson-unlock system, nudges, and habit-badge logic. This is the product's actual behavior spec — implement it as written, don't improvise new unlocks or mechanics without updating this doc first.
+- @docs/DESIGN_SYSTEM.md — the visual identity (passbook/ledger direction). Reference `src/components/Stamp.tsx`, `src/components/LessonEntry.tsx`, and `src/components/TradeTicket.tsx` as the canonical implementation of it — match their patterns (tokens, tabular-nums on money, the stamp used only for genuine completions) rather than introducing a new visual language elsewhere in the app.
 
 ## Working style
 
@@ -26,6 +28,10 @@ Read these before writing any code, in this order:
 - Keep files under ~300 lines; split by feature, not by type
 - All Supabase queries that touch money (`portfolios`, `holdings`, `transactions`) happen in server-side API routes only, never directly from client components
 - Every function that changes `cash_balance` or `holdings` must be covered by at least a basic test before being considered done
+
+## Gamification guardrail (see docs/LOGIC.md "Design constraint")
+
+Never add a mechanic that rewards trading *frequency* or *returns* — no streaks that break on inactivity, no returns-based leaderboards, no urgency timers, no price-move push notifications, no confetti tied to a profitable trade. Badges and the stamp celebrate habits (patience, diversification, using the cooldown pause) only. If a feature request would violate this, flag it instead of implementing it.
 
 ## Safety guardrails
 

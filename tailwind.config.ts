@@ -1,28 +1,25 @@
 import type { Config } from "tailwindcss";
 
-// Design direction (see docs/ARCHITECTURE.md §9): calm, trustworthy, not hype-y.
-// Deep teal/forest as primary, warm off-white background — deliberately avoiding
-// the generic "AI app" cream+terracotta or near-black+neon defaults.
+// Design system: see docs/DESIGN_SYSTEM.md. Grounded in the Indian bank
+// passbook — not generic "clean fintech minimalism." Every color here has a
+// stated reason in that doc; don't add new ones without updating it.
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
       colors: {
-        background: "#F7F5EF",
-        foreground: "#1A2E2B",
-        primary: {
-          DEFAULT: "#1F4E42",
-          light: "#2E6B58",
-          dark: "#123028",
-        },
-        accent: "#C77B4B",
-        muted: "#8B9490",
-        danger: "#9C3B3B",
-        success: "#3B7A57",
+        paper: "#E9EFE7",
+        ink: "#1E2A44",
+        rule: "#5C7A63",
+        stamp: "#8C2F39",
+        gain: "#2F6B4F",
+        loss: "#A6493F",
+        muted: "#6B7568",
       },
       fontFamily: {
         display: ["'Fraunces'", "serif"],
         body: ["'Inter'", "sans-serif"],
+        mono: ["'IBM Plex Mono'", "monospace"],
       },
     },
   },

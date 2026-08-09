@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NiveshLoop — design preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #E9EFE7;
+    --ink: #1E2A44;
+    --rule: #5C7A63;
+    --stamp: #8C2F39;
+    --gain: #2F6B4F;
+    --loss: #A6493F;
+    --muted: #6B7568;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 60px 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  .eyebrow {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--muted); margin-bottom: 24px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif; font-weight: 600;
+    font-size: 42px; line-height: 1.15; margin: 0 0 24px;
+  }
+  h1 span { color: var(--stamp); }
+  .lede { font-size: 18px; color: rgba(30,42,68,0.75); max-width: 480px; margin: 0 0 56px; }
+
+  .ledger {
+    border: 1px solid rgba(92,122,99,0.3); border-radius: 4px;
+    overflow: hidden; margin-bottom: 56px; background: var(--paper);
+  }
+  .ledger-head {
+    padding: 12px 20px; border-bottom: 1px solid rgba(92,122,99,0.3);
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .ledger-head .title { font-family: 'Fraunces', serif; font-size: 14px; }
+  .ledger-head .page { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); }
+  .row {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 20px; border-bottom: 1px solid rgba(92,122,99,0.15);
+  }
+  .row:last-child { border-bottom: none; }
+  .stamp {
+    width: 36px; height: 36px; flex-shrink: 0;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  }
+  .stamp.earned { border: 2px solid var(--stamp); transform: rotate(-6deg); }
+  .stamp.unearned { border: 1.5px dashed var(--rule); opacity: 0.5; }
+  .stamp svg { width: 16px; height: 16px; }
+  .row .date { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); width: 48px; flex-shrink: 0; }
+  .row .desc { font-size: 14px; flex: 1; }
+  .row .desc.muted { color: var(--muted); }
+  .row .amount { font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .amount.negative { color: var(--loss); }
+  .amount.positive { color: var(--gain); }
+
+  .cta {
+    display: inline-block; background: var(--stamp); color: var(--paper);
+    padding: 13px 28px; border-radius: 4px; font-weight: 500; font-size: 15px;
+    text-decoration: none; margin-bottom: 20px;
+  }
+  .disclaimer { font-size: 13px; color: var(--muted); max-width: 420px; margin: 0 0 60px; }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--muted); margin-bottom: 16px;
+  }
+
+  .ticket {
+    border: 1px solid rgba(92,122,99,0.3); border-radius: 4px; padding: 24px;
+    max-width: 340px; margin-bottom: 40px;
+  }
+  .ticket-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .ticket-head .name { font-family: 'Fraunces', serif; font-size: 18px; }
+  .ticket-head .price { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+  .ticket-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .field-label { font-size: 13px; margin-bottom: 4px; display: block; }
+  .field {
+    width: 100%; border: 1px solid rgba(92,122,99,0.4); border-radius: 4px;
+    padding: 9px 12px; font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums;
+    background: transparent; color: var(--ink); margin-bottom: 16px; font-size: 14px;
+  }
+  .nudge { font-size: 12px; color: var(--muted); margin: -8px 0 16px; }
+  .total-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-top: 12px; border-top: 1px solid rgba(92,122,99,0.25); margin-bottom: 20px;
+  }
+  .total-row .label { font-size: 13px; color: var(--muted); }
+  .total-row .value { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+  .btn {
+    width: 100%; background: var(--stamp); color: var(--paper); border: none;
+    padding: 12px; border-radius: 4px; font-family: 'Inter', sans-serif;
+    font-weight: 500; font-size: 14px; cursor: pointer;
+  }
+
+  .cooldown {
+    border: 1px solid rgba(140,47,57,0.4); background: rgba(140,47,57,0.05);
+    border-radius: 4px; padding: 24px; max-width: 340px;
+  }
+  .cooldown .title { font-family: 'Fraunces', serif; font-size: 18px; margin-bottom: 8px; }
+  .cooldown p { font-size: 14px; color: rgba(30,42,68,0.8); margin-bottom: 20px; line-height: 1.5; }
+  .cooldown .actions { display: flex; gap: 16px; }
+  .cooldown .actions a { font-size: 14px; font-weight: 500; text-decoration: none; }
+  .wait { color: var(--rule); }
+  .sell { color: var(--stamp); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">Free · No ads · Simulated money only</p>
+  <h1>A passbook for learning to invest — <span>every entry earned, nothing simulated about the lesson.</span></h1>
+  <p class="lede">Most places teach the theory, then leave you to figure out the doing. Here, every lesson and every trade lives in the same ledger — you read, you act with ₹1,00,000 in fake money, and every so often we hand the page back and show you the pattern in how you're actually investing.</p>
+
+  <div class="ledger">
+    <div class="ledger-head">
+      <span class="title">Your passbook</span>
+      <span class="page">Page 1</span>
+    </div>
+    <div class="row">
+      <div class="stamp earned"><svg viewBox="0 0 24 24" fill="none" stroke="#8C2F39" stroke-width="3"><path d="M4 12l5 5 11-11"/></svg></div>
+      <span class="date">Day 1</span>
+      <span class="desc">Lesson — What is a stock?</span>
+    </div>
+    <div class="row">
+      <div class="stamp unearned"></div>
+      <span class="date">Day 1</span>
+      <span class="desc">Bought 1 × TCS</span>
+      <span class="amount negative">−₹3,842.00</span>
+    </div>
+    <div class="row">
+      <div class="stamp earned"><svg viewBox="0 0 24 24" fill="none" stroke="#8C2F39" stroke-width="3"><path d="M4 12l5 5 11-11"/></svg></div>
+      <span class="date">Day 6</span>
+      <span class="desc">Lesson — Stop-losses</span>
+    </div>
+    <div class="row">
+      <div class="stamp unearned"></div>
+      <span class="date">Day 14</span>
+      <span class="desc muted">Reflection unlocked — 3 fast exits noticed</span>
+    </div>
+  </div>
+
+  <a href="#" class="cta">Open your passbook — start with ₹1,00,000 fake</a>
+  <p class="disclaimer">Simulated portfolio only. Prices are delayed ~15 minutes and sourced for educational use. Nothing here is investment advice.</p>
+
+  <p class="section-label">Trade ticket — after the stop-loss lesson</p>
+  <div class="ticket">
+    <div class="ticket-head">
+      <span class="name">Buy RELIANCE</span>
+      <span class="price">₹2,847.50</span>
+    </div>
+    <p class="ticket-sub">Delayed price · simulated only</p>
+    <label class="field-label">Quantity</label>
+    <input class="field" value="2" readonly />
+    <label class="field-label">Stop-loss <span style="color:var(--muted)">(optional, but recommended)</span></label>
+    <input class="field" placeholder="e.g. 5% below entry" readonly />
+    <div class="total-row"><span class="label">Total</span><span class="value">₹5,695.00</span></div>
+    <button class="btn">Buy (simulated)</button>
+  </div>
+
+  <p class="section-label">The cooldown nudge — after a sharp drop, on sell</p>
+  <div class="cooldown">
+    <p class="title">Take a moment</p>
+    <p>RELIANCE dropped sharply today. Selling now locks in the loss — you can still sell right after this. No rush either way.</p>
+    <div class="actions">
+      <a href="#" class="wait">I'll wait</a>
+      <a href="#" class="sell">Sell anyway →</a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
