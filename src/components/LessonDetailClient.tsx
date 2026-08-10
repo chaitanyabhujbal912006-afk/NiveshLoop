@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { Stamp } from "./Stamp";
 import { PriceChart } from "./PriceChart";
 import type { Lesson } from "@/types";
@@ -40,6 +40,21 @@ export function LessonDetailClient({
   const [justCompleted, setJustCompleted] = useState(false);
   const [unlockedAction, setUnlockedAction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const articleRef = useRef<HTMLElement>(null);
+  const [readProgress, setReadProgress] = useState(0);
+
+  useEffect(() => {
+    function handleScroll() {
+      const el = articleRef.current;
+      if (!el) return;
+      const { top, height } = el.getBoundingClientRect();
+      const windowH = window.innerHeight;
+      const scrolled = Math.max(0, windowH - top);
+      setReadProgress(Math.min(1, scrolled / height));
+    }
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   async function handleComplete() {
     if (completed || completing) return;
@@ -170,20 +185,92 @@ export function LessonDetailClient({
     insights_panel_v2: "Upgraded insights panel",
   };
 
+  const LESSON_ICONS: Record<number, string> = {
+    1: "📈", 2: "🏦", 3: "📋", 4: "⚡", 5: "🛡️",
+    6: "🕯️", 7: "🧮", 8: "🧠", 9: "🌐", 10: "📰",
+    11: "💼", 12: "⏳", 13: "👁️", 14: "🔮", 15: "🏆",
+  };
+  const icon = LESSON_ICONS[lesson.orderIndex] ?? "📚";
+
   return (
     <div className="min-h-screen bg-paper">
-      {/* ── Nav ───────────────────────────────────────────────────────── */}
-      <div className="border-b border-rule/25 sticky top-0 z-20 bg-paper/95 backdrop-blur-[2px]">
-        <div className="max-w-2xl mx-auto px-4 sm:px-8 h-12 flex items-center justify-between">
-          <Link
-            href="/lessons"
-            className="font-mono text-xs text-muted hover:text-ink transition-colors uppercase tracking-widest"
-          >
-            ← Lessons
-          </Link>
-          <span className="font-mono text-xs tabular-nums text-muted">
-            Lesson {lesson.orderIndex} of {totalLessons}
-          </span>
+
+      {/* ── Reading progress bar ─────────────────────────────────────── */}
+      <div className="fixed top-0 left-0 right-0 z-50 h-0.5 bg-rule/10">
+        <motion.div
+          className="h-full bg-stamp"
+          style={{ width: `${readProgress * 100}%` }}
+          transition={{ duration: 0.1 }}
+        />
+      </div>
+
+      {/* ── Hero Header ──────────────────────────────────────────────── */}
+      <div className="relative bg-ink overflow-hidden">
+        {/* Ledger lines */}
+        <div className="absolute inset-0"
+          style={{ backgroundImage: "repeating-linear-gradient(transparent,transparent 47px,rgba(92,122,99,0.06) 47px,rgba(92,122,99,0.06) 48px)" }}
+        />
+        <div className="absolute inset-0 opacity-[0.05]"
+          style={{ backgroundImage: "radial-gradient(circle, rgba(92,122,99,1) 1px, transparent 1px)", backgroundSize: "20px 20px" }}
+        />
+        <div className="absolute left-0 top-0 bottom-0 w-2 bg-stamp/80" />
+
+        <div className="relative max-w-2xl mx-auto px-4 sm:px-8">
+          {/* Nav */}
+          <div className="h-12 flex items-center justify-between">
+            <Link href="/lessons"
+              className="font-mono text-xs text-paper/40 hover:text-paper/70 transition-colors uppercase tracking-widest"
+            >
+              ← Lessons
+            </Link>
+            <span className="font-mono text-xs tabular-nums text-paper/30">
+              {lesson.orderIndex} / {totalLessons}
+            </span>
+          </div>
+
+          {/* Hero content */}
+          <div className="py-8 pb-10">
+            <motion.div
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex items-center gap-3 mb-4"
+            >
+              <span className="text-3xl" aria-hidden>{icon}</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-paper/35">
+                Lesson {String(lesson.orderIndex).padStart(2, "0")}
+                {lesson.unlocksAction && (
+                  <> · Unlocks {unlocksDisplayName[lesson.unlocksAction] ?? lesson.unlocksAction.replace(/_/g, " ")}</>
+                )}
+              </span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.05 }}
+              className="font-display text-3xl sm:text-4xl font-semibold text-paper leading-[1.05] mb-4"
+            >
+              {lesson.title}
+            </motion.h1>
+
+            {/* Lesson meta pills */}
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="flex flex-wrap items-center gap-3"
+            >
+              <span className="font-mono text-[9px] uppercase tracking-widest text-paper/30 border border-paper/15 px-2 py-1">~4 min read</span>
+              {completed && (
+                <span className="font-mono text-[9px] uppercase tracking-widest text-gain/80 border border-gain/25 px-2 py-1">
+                  ✓ Completed
+                </span>
+              )}
+              {!completed && !isLocked && (
+                <span className="font-mono text-[9px] uppercase tracking-widest text-stamp/70 border border-stamp/25 px-2 py-1">
+                  Available
+                </span>
+              )}
+            </motion.div>
+          </div>
         </div>
       </div>
 
@@ -206,18 +293,19 @@ export function LessonDetailClient({
         )}
 
         {/* Lesson content */}
-        <article className={isLocked ? "opacity-40 pointer-events-none select-none" : ""}>
-          {/* Meta header */}
-          <div className="mb-8 pb-4 border-b border-rule/20">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-2">
-              Lesson {lesson.orderIndex}
-              {lesson.unlocksAction && (
-                <> · Unlocks: {unlocksDisplayName[lesson.unlocksAction] ?? lesson.unlocksAction.replace(/_/g, " ")}</>
-              )}
-            </p>
-          </div>
+        <motion.article
+          ref={articleRef}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className={[
+            "relative",
+            isLocked ? "opacity-30 pointer-events-none select-none" : "",
+          ].join(" ")}
+        >
+          {/* Passbook left rule */}
+          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-rule/20 -ml-6 hidden sm:block" aria-hidden />
 
-          <div className="prose-like">
+          <div className="prose-like pl-0">
             {renderMarkdown(lesson.bodyMd)}
 
             {lesson.slug === "reading-a-candlestick" && (
@@ -229,28 +317,35 @@ export function LessonDetailClient({
               </div>
             )}
           </div>
-        </article>
+        </motion.article>
 
-        {/* ── Completion block ────────────────────────────────────────── */}
+        {/* ── Completion block ──────────────────────────────────────── */}
         {!isLocked && (
-          <div className="mt-12 border-t border-rule/25 pt-8">
+          <div className="mt-12">
+            {/* Thick divider */}
+            <div className="border-t-2 border-rule/25 mb-8" />
+
             <AnimatePresence mode="wait">
               {justCompleted ? (
                 <motion.div
                   key="just-done"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.4 }}
                   className="space-y-6"
                 >
-                  {/* Stamp press moment */}
-                  <div className="flex items-center gap-5">
-                    <Stamp label={lesson.title} earned size="lg" animateOnMount />
-                    <div>
-                      <p className="font-display text-2xl font-semibold text-ink mb-0.5">
-                        Lesson complete.
-                      </p>
-                      <p className="font-mono text-xs text-muted uppercase tracking-widest">
+                  {/* STAMP — full dramatic moment */}
+                  <div className="bg-ink border border-rule/20 p-8 text-center relative overflow-hidden">
+                    <div className="absolute inset-0"
+                      style={{ backgroundImage: "repeating-linear-gradient(transparent,transparent 47px,rgba(92,122,99,0.06) 47px,rgba(92,122,99,0.06) 48px)" }}
+                    />
+                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-stamp" />
+                    <div className="relative">
+                      <div className="flex justify-center mb-4">
+                        <Stamp label={lesson.title} earned size="lg" animateOnMount />
+                      </div>
+                      <p className="font-display text-2xl font-semibold text-paper mb-1">Lesson complete.</p>
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-paper/40">
                         Stamped in your passbook
                       </p>
                     </div>
@@ -319,19 +414,29 @@ export function LessonDetailClient({
                       {error}
                     </p>
                   )}
-                  <div className="flex flex-col sm:flex-row gap-3 items-start">
-                    <button
-                      onClick={handleComplete}
-                      disabled={completing}
-                      className="bg-stamp text-paper px-8 py-3.5 font-body font-semibold text-base hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-50"
-                    >
-                      {completing ? "Recording…" : "Mark as complete →"}
-                    </button>
-                    <p className="font-mono text-[10px] text-muted uppercase tracking-widest self-center">
-                      {lesson.unlocksAction
-                        ? `Completes to unlock: ${unlocksDisplayName[lesson.unlocksAction] ?? lesson.unlocksAction}`
-                        : "No unlock — sets up a later lesson"}
+                  {/* CTA block */}
+                  <div className="bg-rule/[0.04] border border-rule/25 p-6">
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-3">
+                      Ready to continue?
                     </p>
+                    <p className="font-display text-lg font-semibold text-ink mb-4">
+                      {lesson.unlocksAction
+                        ? `Mark as done to unlock: ${unlocksDisplayName[lesson.unlocksAction] ?? lesson.unlocksAction}`
+                        : "Mark as done to progress"}
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3 items-start">
+                      <button
+                        onClick={handleComplete}
+                        disabled={completing}
+                        className="inline-flex items-center gap-3 bg-stamp text-paper px-8 py-4 font-body font-semibold text-base hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-50"
+                      >
+                        {completing ? (
+                          <span className="live-pulse">Recording…</span>
+                        ) : (
+                          <>Mark as complete →</>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -341,25 +446,25 @@ export function LessonDetailClient({
 
         {/* Prev/next navigation */}
         {!isLocked && (
-          <div className="mt-8 pt-6 border-t border-rule/20 flex justify-between gap-4">
+          <div className="mt-10 grid grid-cols-2 gap-3">
             {prev ? (
               <Link
                 href={`/lessons/${prev.slug}`}
-                className="font-mono text-xs text-muted hover:text-ink transition-colors"
+                className="border border-rule/25 bg-paper p-4 hover:border-rule/50 transition-colors group"
               >
-                ← {prev.title}
+                <p className="font-mono text-[9px] uppercase tracking-widest text-muted mb-1">← Previous</p>
+                <p className="font-display text-sm font-semibold text-ink group-hover:text-stamp transition-colors truncate">{prev.title}</p>
               </Link>
-            ) : (
-              <span />
-            )}
-            {next && !justCompleted && (
+            ) : <div />}
+            {next && !justCompleted ? (
               <Link
                 href={`/lessons/${next.slug}`}
-                className="font-mono text-xs text-muted hover:text-ink transition-colors"
+                className="border border-rule/25 bg-paper p-4 hover:border-rule/50 transition-colors group text-right"
               >
-                {next.title} →
+                <p className="font-mono text-[9px] uppercase tracking-widest text-muted mb-1">Next →</p>
+                <p className="font-display text-sm font-semibold text-ink group-hover:text-stamp transition-colors truncate">{next.title}</p>
               </Link>
-            )}
+            ) : <div />}
           </div>
         )}
       </main>
