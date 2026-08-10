@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Stamp } from "./Stamp";
+import { PriceChart } from "./PriceChart";
 import type { Lesson } from "@/types";
 
 interface Props {
@@ -218,6 +219,15 @@ export function LessonDetailClient({
 
           <div className="prose-like">
             {renderMarkdown(lesson.bodyMd)}
+
+            {lesson.slug === "reading-a-candlestick" && (
+              <div className="mt-8 border border-rule/30 rounded-sm p-4 bg-rule/[0.02]">
+                <p className="font-display text-sm font-semibold text-ink mb-2">
+                  Interactive Practice: Reading Candlesticks
+                </p>
+                <PriceChart symbol="RELIANCE.NS" currentPrice={2950} isCandlestickUnlocked={true} />
+              </div>
+            )}
           </div>
         </article>
 

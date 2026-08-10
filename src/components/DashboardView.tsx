@@ -10,6 +10,8 @@ import { TradeTicket } from "./TradeTicket";
 import { TransactionHistory } from "./TransactionHistory";
 import { InkNumber } from "./InkNumber";
 import { Stamp } from "./Stamp";
+import { PriceChart } from "./PriceChart";
+import { AllocationBar } from "./AllocationBar";
 import { hasUnlocked } from "@/lib/unlocks";
 import type { PriceQuote, TradeSide } from "@/types";
 import type { InsightResult, BadgeResult } from "@/lib/insights";
@@ -59,6 +61,7 @@ export function DashboardView({
   // Unlocks
   const canTrade = hasUnlocked(completedLessonSlugs, "first_trade");
   const hasInsightsUnlocked = hasUnlocked(completedLessonSlugs, "insights_panel");
+  const isCandlestickUnlocked = hasUnlocked(completedLessonSlugs, "chart_view");
 
   const [tradeLoading, setTradeLoading] = useState(false);
   const [insightsData, setInsightsData] = useState<{
@@ -231,6 +234,11 @@ export function DashboardView({
               transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
               style={{ transformStyle: "preserve-3d", perspective: 1000 }}
             >
+              {/* Allocation bar visual */}
+              <div className="mb-6">
+                <AllocationBar cash={initialCash} holdings={initialHoldings} />
+              </div>
+
               {/* Holdings ledger */}
               <div className="mb-8">
                 <div className="flex justify-between items-baseline mb-3">
@@ -385,6 +393,14 @@ export function DashboardView({
                             </motion.div>
                           )}
                         </AnimatePresence>
+
+                        <div className="mb-4">
+                          <PriceChart
+                            symbol={selectedQuote.symbol}
+                            currentPrice={selectedQuote.price}
+                            isCandlestickUnlocked={isCandlestickUnlocked}
+                          />
+                        </div>
 
                         <TradeTicket
                           symbol={selectedQuote.symbol}
