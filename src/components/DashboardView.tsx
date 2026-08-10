@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,6 +12,7 @@ import { InkNumber } from "./InkNumber";
 import { Stamp } from "./Stamp";
 import { hasUnlocked } from "@/lib/unlocks";
 import type { PriceQuote, TradeSide } from "@/types";
+import type { InsightResult, BadgeResult } from "@/lib/insights";
 
 interface HoldingItem {
   id: string;
@@ -55,9 +56,30 @@ export function DashboardView({
   const [tradeSide, setTradeSide] = useState<TradeSide>("buy");
   const [tradeStatus, setTradeStatus] = useState<{ success?: boolean; message?: string } | null>(null);
 
-  // first_trade gate — trading is locked until 'what-is-a-stock' is complete
+  // Unlocks
   const canTrade = hasUnlocked(completedLessonSlugs, "first_trade");
+  const hasInsightsUnlocked = hasUnlocked(completedLessonSlugs, "insights_panel");
+
   const [tradeLoading, setTradeLoading] = useState(false);
+  const [insightsData, setInsightsData] = useState<{
+    insights: InsightResult[];
+    badges: BadgeResult[];
+    transactionCount: number;
+  } | null>(null);
+  const [loadingInsights, setLoadingInsights] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === "insights" && hasInsightsUnlocked && !insightsData && !loadingInsights) {
+      setLoadingInsights(true);
+      fetch("/api/insights")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data) setInsightsData(data);
+        })
+        .catch(() => {})
+        .finally(() => setLoadingInsights(false));
+    }
+  }, [activeTab, hasInsightsUnlocked, insightsData, loadingInsights]);
 
   async function handleSignOut() {
     const supabase = supabaseBrowser();
@@ -112,7 +134,7 @@ export function DashboardView({
   const TABS: { id: Tab; label: string; locked?: boolean }[] = [
     { id: "ledger", label: "Ledger" },
     { id: "trade", label: canTrade ? "Trade" : "Trade 🔒", locked: !canTrade },
-    { id: "insights", label: "Insights" },
+    { id: "insights", label: hasInsightsUnlocked ? "Insights" : "Insights 🔒", locked: !hasInsightsUnlocked },
   ];
 
   return (
@@ -316,76 +338,75 @@ export function DashboardView({
                   </p>
                 </div>
               ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8">
-                <SymbolSearch
-                  onSelectQuote={(quote) => {
-                    setSelectedQuote(quote);
-                    setTradeSide("buy");
-                    setTradeStatus(null);
-                  }}
-                />
+                <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8">
+                  <SymbolSearch
+                    onSelectQuote={(quote) => {
+                      setSelectedQuote(quote);
+                      setTradeSide("buy");
+                      setTradeStatus(null);
+                    }}
+                  />
 
-                <div>
-                  {selectedQuote ? (
-                    <>
-                      <div className="flex gap-2 mb-4">
-                        {(["buy", "sell"] as TradeSide[]).map((s) => (
-                          <button
-                            key={s}
-                            onClick={() => setTradeSide(s)}
-                            className={[
-                              "flex-1 py-2 text-xs font-mono rounded-sm border capitalize transition-colors",
-                              tradeSide === s
-                                ? "bg-stamp text-paper border-stamp"
-                                : "bg-paper text-muted border-rule/30 hover:text-ink",
-                            ].join(" ")}
-                          >
-                            {s}
-                          </button>
-                        ))}
+                  <div>
+                    {selectedQuote ? (
+                      <>
+                        <div className="flex gap-2 mb-4">
+                          {(["buy", "sell"] as TradeSide[]).map((s) => (
+                            <button
+                              key={s}
+                              onClick={() => setTradeSide(s)}
+                              className={[
+                                "flex-1 py-2 text-xs font-mono rounded-sm border capitalize transition-colors",
+                                tradeSide === s
+                                  ? "bg-stamp text-paper border-stamp"
+                                  : "bg-paper text-muted border-rule/30 hover:text-ink",
+                              ].join(" ")}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+
+                        <AnimatePresence>
+                          {tradeStatus && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0 }}
+                              className={[
+                                "p-3 rounded-sm text-xs font-body mb-4 border",
+                                tradeStatus.success
+                                  ? "bg-gain/10 border-gain/30 text-gain"
+                                  : "bg-loss/10 border-loss/30 text-loss",
+                              ].join(" ")}
+                            >
+                              {tradeStatus.success && <Stamp label="trade-success" earned size="sm" animateOnMount />}
+                              {" "}{tradeStatus.message}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        <TradeTicket
+                          symbol={selectedQuote.symbol}
+                          price={selectedQuote.price}
+                          side={tradeSide}
+                          completedLessonSlugs={completedLessonSlugs}
+                          onSubmit={handleTradeSubmit}
+                        />
+                      </>
+                    ) : (
+                      <div className="border border-dashed border-rule/30 rounded-sm p-10 text-center h-full flex flex-col justify-center items-center">
+                        <p className="font-display text-base text-ink mb-2">Trade Ticket</p>
+                        <p className="font-body text-xs text-muted max-w-xs">
+                          Search a stock on the left to load its delayed quote.
+                        </p>
                       </div>
-
-                      <AnimatePresence>
-                        {tradeStatus && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -4 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0 }}
-                            className={[
-                              "p-3 rounded-sm text-xs font-body mb-4 border",
-                              tradeStatus.success
-                                ? "bg-gain/10 border-gain/30 text-gain"
-                                : "bg-loss/10 border-loss/30 text-loss",
-                            ].join(" ")}
-                          >
-                            {tradeStatus.success && <Stamp label="trade-success" earned size="sm" animateOnMount />}
-                            {" "}{tradeStatus.message}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      <TradeTicket
-                        symbol={selectedQuote.symbol}
-                        price={selectedQuote.price}
-                        side={tradeSide}
-                        completedLessonSlugs={completedLessonSlugs}
-                        onSubmit={handleTradeSubmit}
-                      />
-                    </>
-                  ) : (
-                    <div className="border border-dashed border-rule/30 rounded-sm p-10 text-center h-full flex flex-col justify-center items-center">
-                      <p className="font-display text-base text-ink mb-2">Trade Ticket</p>
-                      <p className="font-body text-xs text-muted max-w-xs">
-                        Search a stock on the left to load its delayed quote.
-                      </p>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-              )} {/* end canTrade ternary */}
+              )}
             </motion.div>
           )}
-
 
           {activeTab === "insights" && (
             <motion.div
@@ -396,37 +417,122 @@ export function DashboardView({
               transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
               style={{ transformStyle: "preserve-3d", perspective: 1000 }}
             >
-              <div className="max-w-xl">
-                <p className="font-mono text-xs uppercase tracking-widest text-muted mb-6">
-                  Passbook handed back — page {initialTransactions.length + 1}
-                </p>
-                <h2 className="font-display text-3xl font-semibold text-ink mb-2">Your patterns so far</h2>
-                <p className="font-body text-sm text-muted mb-10">
-                  Insights appear after ~10 trades. These describe your own behavior — they never tell you what to do.
-                </p>
-
-                {initialTransactions.length < 5 ? (
-                  <div className="border border-dashed border-rule/30 rounded-sm p-10 text-center">
-                    <p className="font-body text-sm text-ink/70 mb-1">
-                      {initialTransactions.length === 0
-                        ? "No trades yet."
-                        : `${initialTransactions.length} trade${initialTransactions.length === 1 ? "" : "s"} recorded.`}
+              {!hasInsightsUnlocked ? (
+                <div className="border border-dashed border-rule/35 p-10 text-center max-w-md mx-auto mt-4">
+                  <p className="font-display text-2xl font-semibold text-ink mb-2">
+                    Behavioral Insights Locked
+                  </p>
+                  <p className="font-body text-sm text-ink/70 mb-6 leading-relaxed">
+                    Complete <strong>Lesson 8 — Common Beginner Mistakes</strong> to unlock your personal pattern reflection ledger.
+                  </p>
+                  <Link
+                    href="/lessons/common-beginner-mistakes"
+                    className="inline-flex items-center gap-2 bg-stamp text-paper px-6 py-3 font-body font-medium text-sm hover:opacity-90 transition-opacity"
+                  >
+                    Go to Lesson 8 →
+                  </Link>
+                  <p className="mt-4 font-mono text-[10px] text-muted uppercase tracking-widest">
+                    Reflects patterns without personal financial advice
+                  </p>
+                </div>
+              ) : (
+                <div className="max-w-3xl space-y-10">
+                  <div>
+                    <p className="font-mono text-xs uppercase tracking-widest text-muted mb-1">
+                      Passbook Annotation · Page {initialTransactions.length + 1}
                     </p>
-                    <p className="font-body text-xs text-muted">
-                      Keep trading — insights unlock after a handful of trades.
+                    <h2 className="font-display text-3xl font-semibold text-ink mb-2">Your patterns so far</h2>
+                    <p className="font-body text-sm text-muted">
+                      Insights reflect patterns in your past trading behavior. They describe what happened — they never tell you what to buy or sell.
                     </p>
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="border-l-2 border-rule/40 pl-5 py-1">
-                      <p className="font-body text-sm text-muted uppercase tracking-widest text-xs mb-2 font-mono">Annotation</p>
-                      <p className="font-body text-base text-ink leading-relaxed">
-                        You&rsquo;ve made {initialTransactions.length} trades so far. Full behavioral insights are computed in Phase 3 — come back then.
-                      </p>
+
+                  {/* Habit Badges Section */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-display text-lg font-semibold text-ink">Habit Badges</h3>
+                      <span className="font-mono text-xs text-muted">Earned for discipline, not returns</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {(insightsData?.badges || [
+                        { id: "steady_hand", label: "Steady Hand", description: "Held through market dip", earned: false },
+                        { id: "diversified", label: "Diversified", description: "Positions across 3+ stocks", earned: false },
+                        { id: "patient_holder", label: "Patient Holder", description: "Long-term position holding", earned: false },
+                        { id: "did_the_homework", label: "Did the Homework", description: "Completed lessons before trading", earned: false },
+                        { id: "cooled_off", label: "Cooled Off", description: "Used reflective cooldown pause", earned: false },
+                      ]).map((badge) => (
+                        <div
+                          key={badge.id}
+                          className={[
+                            "p-4 border rounded-sm flex items-start gap-3 transition-colors",
+                            badge.earned
+                              ? "bg-paper border-rule/40 shadow-xs"
+                              : "bg-rule/[0.03] border-rule/15 text-muted",
+                          ].join(" ")}
+                        >
+                          <div className="pt-0.5">
+                            <Stamp label={badge.label} earned={badge.earned} size="sm" animateOnMount={badge.earned} />
+                          </div>
+                          <div>
+                            <p className={`font-display text-sm font-semibold ${badge.earned ? "text-ink" : "text-muted"}`}>
+                              {badge.label}
+                            </p>
+                            <p className="font-body text-xs text-muted leading-relaxed mt-0.5">
+                              {badge.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                )}
-              </div>
+
+                  {/* Insights Section */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-display text-lg font-semibold text-ink">Behavioral Observations</h3>
+                      <span className="font-mono text-xs text-muted">Updated on request</span>
+                    </div>
+
+                    {loadingInsights ? (
+                      <div className="border border-rule/20 p-8 text-center rounded-sm">
+                        <p className="font-mono text-xs text-muted animate-pulse">Analyzing transaction ledger...</p>
+                      </div>
+                    ) : insightsData?.insights && insightsData.insights.length > 0 ? (
+                      <div className="space-y-4">
+                        {insightsData.insights.map((insight) => (
+                          <div
+                            key={insight.kind}
+                            className="border-l-2 border-stamp bg-paper border border-rule/25 rounded-r-sm p-5 shadow-xs"
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-mono text-[10px] uppercase tracking-widest text-stamp font-semibold">
+                                Observation
+                              </span>
+                              <span className="text-muted text-xs">•</span>
+                              <span className="font-display text-sm font-semibold text-ink">
+                                {insight.title}
+                              </span>
+                            </div>
+                            <p className="font-body text-sm text-ink/85 leading-relaxed">
+                              {insight.message}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="border border-dashed border-rule/30 rounded-sm p-8 text-center">
+                        <p className="font-display text-sm text-ink font-medium mb-1">
+                          No negative trading habits detected!
+                        </p>
+                        <p className="font-body text-xs text-muted">
+                          You are trading with clear intent. Continue executing simulated orders and reviewing lessons to unlock further reflections.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -440,3 +546,4 @@ export function DashboardView({
     </div>
   );
 }
+
