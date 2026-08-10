@@ -144,13 +144,43 @@ export function DashboardView({
 
   return (
     <div className="min-h-screen">
+      {/* ── LIVE MARKET INDICES TICKER BAR ── */}
+      <div className="bg-ink text-paper text-xs border-b border-rule/20 py-2 px-4 sm:px-8 flex items-center justify-between overflow-x-auto">
+        <div className="flex items-center gap-6 shrink-0">
+          <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-paper/40">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gain opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-gain"></span>
+            </span>
+            Simulated Market · Live
+          </div>
+          {[
+            { name: "NIFTY 50", val: "22,147.90", chg: "+0.6%", up: true },
+            { name: "SENSEX", val: "73,212.40", chg: "+0.7%", up: true },
+            { name: "BANK NIFTY", val: "46,588.20", chg: "+0.4%", up: true },
+            { name: "INDIA VIX", val: "13.82", chg: "-2.1%", up: false },
+          ].map((m) => (
+            <div key={m.name} className="flex items-center gap-2 font-mono text-[10px]">
+              <span className="text-paper/50">{m.name}</span>
+              <span className="tabular-nums text-paper/80">{m.val}</span>
+              <span className={`tabular-nums font-semibold ${m.up ? "text-gain" : "text-loss"}`}>
+                {m.chg}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="hidden md:flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-paper/30">
+          Delayed 15m · Practice Mode
+        </div>
+      </div>
+
       {/* ── PASSBOOK HEADER ─────────────────────────────────────────────── */}
       <div className="border-b border-rule/25 bg-paper relative overflow-hidden">
         {/* Dotgrid passbook texture */}
         <div className="absolute inset-0 dotgrid-bg opacity-40 pointer-events-none" aria-hidden />
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-8">
-          <div className="flex justify-between items-center pt-6 pb-4">
+          <div className="flex justify-between items-center pt-5 pb-3">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-0.5">
                 Nivesh<span className="text-stamp">Loop</span> · Passbook
@@ -160,9 +190,10 @@ export function DashboardView({
             <div className="flex items-center gap-3">
               <Link
                 href="/lessons"
-                className="font-mono text-xs text-muted hover:text-ink border border-rule/25 px-3 py-1.5 rounded-sm transition-colors"
+                className="font-mono text-xs bg-stamp/10 text-stamp border border-stamp/30 px-3 py-1.5 rounded-sm hover:bg-stamp hover:text-paper transition-all flex items-center gap-1.5"
               >
-                Lessons {!canTrade && "🔒"}
+                <span>Curriculum</span>
+                <span className="font-sans">→</span>
               </Link>
               <button
                 onClick={handleSignOut}

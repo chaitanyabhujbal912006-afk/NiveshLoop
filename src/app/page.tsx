@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { FeatureSandbox } from "@/components/FeatureSandbox";
+import { MoneyVaultWidget } from "@/components/MoneyVaultWidget";
 
 /* ─── Ticker data ────────────────────────────────────────────────────────── */
 const TICKER_ITEMS = [
@@ -470,12 +472,10 @@ export default function HomePage() {
 
       {/* ══ SECTION 2 — THE PROBLEM ══════════════════════════════════════ */}
       <section className="max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 py-32">
-        <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-12 lg:gap-24">
-          {/* Rotated label */}
-          <div className="hidden lg:flex items-start pt-4">
-            <span className="label-rotated font-mono text-[10px] uppercase tracking-[0.3em] text-muted/40">
-              § 02 — The problem
-            </span>
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-12 lg:gap-20 items-start">
+          {/* Left Column: Money Vault Widget */}
+          <div className="hidden lg:block sticky top-24">
+            <MoneyVaultWidget />
           </div>
 
           <div>
@@ -651,6 +651,9 @@ export default function HomePage() {
             </motion.div>
           ))}
         </div>
+
+        {/* Live Interactive Feature Sandbox */}
+        <FeatureSandbox />
       </section>
 
       {/* ══ SECTION 5 — THE STAMP MOMENT ═════════════════════════════ */}
