@@ -12,6 +12,8 @@ import { InkNumber } from "./InkNumber";
 import { Stamp } from "./Stamp";
 import { PriceChart } from "./PriceChart";
 import { AllocationBar } from "./AllocationBar";
+import { PortfolioGauge } from "./PortfolioGauge";
+import { Sparkline } from "./Sparkline";
 import { hasUnlocked } from "@/lib/unlocks";
 import type { PriceQuote, TradeSide } from "@/types";
 import type { InsightResult, BadgeResult } from "@/lib/insights";
@@ -143,8 +145,11 @@ export function DashboardView({
   return (
     <div className="min-h-screen">
       {/* ── PASSBOOK HEADER ─────────────────────────────────────────────── */}
-      <div className="border-b border-rule/25 bg-paper">
-        <div className="max-w-5xl mx-auto px-4 sm:px-8">
+      <div className="border-b border-rule/25 bg-paper relative overflow-hidden">
+        {/* Dotgrid passbook texture */}
+        <div className="absolute inset-0 dotgrid-bg opacity-40 pointer-events-none" aria-hidden />
+
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-8">
           <div className="flex justify-between items-center pt-6 pb-4">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-0.5">
@@ -168,32 +173,62 @@ export function DashboardView({
             </div>
           </div>
 
-          {/* Balance row */}
-          <div className="grid grid-cols-3 gap-px border border-rule/25 rounded-sm overflow-hidden mb-5">
-            {[
-              {
-                label: "Cash balance",
-                node: <InkNumber value={initialCash} className="text-2xl font-semibold text-ink" />,
-              },
-              {
-                label: "Portfolio value",
-                node: <InkNumber value={totalPortfolioValuation} className="text-2xl font-semibold text-ink" />,
-              },
-              {
-                label: "Total P&L",
-                node: (
-                  <InkNumber
-                    value={pnl}
-                    className={`text-2xl font-semibold ${pnl >= 0 ? "text-gain" : "text-loss"}`}
-                  />
-                ),
-              },
-            ].map((item) => (
-              <div key={item.label} className="bg-paper px-4 py-3">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-1">{item.label}</p>
-                {item.node}
-              </div>
-            ))}
+          {/* ── Portfolio overview: gauge + stats side by side ── */}
+          <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-4 mb-5 items-center">
+            {/* Gauge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.1, ease: [0.34, 1.56, 0.64, 1] }}
+              className="flex justify-center md:justify-start"
+            >
+              <PortfolioGauge portfolioValue={totalPortfolioValuation} />
+            </motion.div>
+
+            {/* Stats grid */}
+            <div className="grid grid-cols-3 gap-px border border-rule/25 rounded-sm overflow-hidden">
+              {[
+                {
+                  label: "Cash balance",
+                  node: <InkNumber value={initialCash} className="text-2xl font-semibold text-ink" />,
+                  extra: null,
+                },
+                {
+                  label: "Portfolio value",
+                  node: <InkNumber value={totalPortfolioValuation} className="text-2xl font-semibold text-ink" />,
+                  extra: null,
+                },
+                {
+                  label: "Total P&L",
+                  node: (
+                    <InkNumber
+                      value={pnl}
+                      className={`text-2xl font-semibold ${pnl >= 0 ? "text-gain" : "text-loss"}`}
+                    />
+                  ),
+                  extra: pnl !== 0 ? (
+                    <span className={`font-mono text-[10px] tabular-nums mt-0.5 ${
+                      pnl >= 0 ? "text-gain/80" : "text-loss/80"
+                    }`}>
+                      {pnl >= 0 ? "+" : ""}{((pnl / 100000) * 100).toFixed(2)}%
+                    </span>
+                  ) : null,
+                },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className={`bg-paper px-4 py-3 transition-all duration-300 ${
+                    item.label === "Total P&L" && pnl !== 0
+                      ? pnl >= 0 ? "gain-glow" : "loss-glow"
+                      : ""
+                  }`}
+                >
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-1">{item.label}</p>
+                  {item.node}
+                  {item.extra}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Passbook page tabs */}
@@ -246,7 +281,7 @@ export function DashboardView({
                   <span className="font-mono text-xs text-muted">{activeHoldings.length} positions</span>
                 </div>
 
-                {activeHoldings.length === 0 ? (
+                  {activeHoldings.length === 0 ? (
                   <div className="border border-dashed border-rule/30 rounded-sm p-10 text-center">
                     <p className="font-body text-sm text-ink/70 mb-2">No positions yet.</p>
                     <p className="font-body text-xs text-muted">
@@ -261,22 +296,26 @@ export function DashboardView({
                   </div>
                 ) : (
                   <div className="border border-rule/30 rounded-sm overflow-hidden">
-                    <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-0 text-[10px] font-mono uppercase tracking-widest text-muted bg-rule/[0.04] border-b border-rule/20 px-5 py-2.5">
+                    <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-0 text-[10px] font-mono uppercase tracking-widest text-muted bg-rule/[0.04] border-b border-rule/20 px-5 py-2.5">
                       <span>Symbol</span>
+                      <span className="text-right px-4">Chart</span>
                       <span className="text-right px-4">Qty</span>
                       <span className="text-right px-4">Avg</span>
                       <span className="text-right px-4">Current</span>
                       <span className="text-right pl-4">P&L</span>
                     </div>
 
-                    {activeHoldings.map((h) => {
+                    {activeHoldings.map((h, idx) => {
                       const price = h.current_price ?? Number(h.avg_price);
                       const pnl = (price - Number(h.avg_price)) * Number(h.qty);
 
                       return (
-                        <div
+                        <motion.div
                           key={h.id}
-                          className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-0 px-5 py-3.5 border-b border-rule/15 last:border-b-0 hover:bg-rule/[0.03] transition-colors"
+                          initial={{ opacity: 0, x: -12 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: idx * 0.05 }}
+                          className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-0 px-5 py-3.5 border-b border-rule/15 last:border-b-0 hover:bg-rule/[0.03] transition-colors group"
                         >
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-sm font-medium text-ink">{h.symbol}</span>
@@ -291,6 +330,15 @@ export function DashboardView({
                               Sell
                             </button>
                           </div>
+                          {/* Mini sparkline */}
+                          <div className="flex items-center px-4">
+                            <Sparkline
+                              basePrice={Number(h.avg_price)}
+                              currentPrice={price}
+                              width={64}
+                              height={22}
+                            />
+                          </div>
                           <span className="font-mono tabular-nums text-sm text-ink text-right px-4">{h.qty}</span>
                           <span className="font-mono tabular-nums text-sm text-muted text-right px-4">
                             ₹{Number(h.avg_price).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -298,10 +346,12 @@ export function DashboardView({
                           <span className="font-mono tabular-nums text-sm text-ink text-right px-4">
                             ₹{price.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
-                          <span className={`font-mono tabular-nums text-sm text-right pl-4 ${pnl >= 0 ? "text-gain" : "text-loss"}`}>
+                          <span className={`font-mono tabular-nums text-sm text-right pl-4 font-medium ${
+                            pnl >= 0 ? "text-gain" : "text-loss"
+                          }`}>
                             {pnl >= 0 ? "+" : ""}₹{Math.abs(pnl).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
-                        </div>
+                        </motion.div>
                       );
                     })}
                   </div>

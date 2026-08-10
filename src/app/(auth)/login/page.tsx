@@ -53,13 +53,78 @@ export default function LoginPage() {
         />
         <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-stamp/90" />
 
+        {/* Dot grid */}
+        <div
+          className="absolute inset-0 opacity-[0.07]"
+          style={{ backgroundImage: "radial-gradient(circle, rgba(92,122,99,1) 1px, transparent 1px)", backgroundSize: "20px 20px" }}
+        />
+
         <div className="relative">
           <Link href="/" className="font-display text-paper font-semibold text-base tracking-tight block">
             Nivesh<span className="text-stamp">Loop</span>
           </Link>
         </div>
 
+        {/* ── Animated Mini Chart ── */}
         <div className="relative">
+          <p className="font-mono text-[8px] uppercase tracking-[0.3em] text-paper/25 mb-3">✓ Portfolio simulation active</p>
+
+          {/* SVG chart — seeded decoration, purely illustrative */}
+          <div className="border border-paper/10 p-3 mb-5" style={{ background: "rgba(255,255,255,0.03)" }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-mono text-[9px] text-paper/40 uppercase tracking-widest">Portfolio — 30d view</span>
+              <span className="font-mono text-[9px] text-gain/80">+4.2%</span>
+            </div>
+            <svg viewBox="0 0 280 70" className="w-full" aria-hidden>
+              <defs>
+                <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#2F6B4F" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#2F6B4F" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              {/* Ledger lines */}
+              {[14, 28, 42, 56].map(y => (
+                <line key={y} x1="0" y1={y} x2="280" y2={y} stroke="rgba(92,122,99,0.12)" strokeWidth="1" />
+              ))}
+              {/* Area */}
+              <path
+                d="M0,55 C20,52 35,48 55,45 C70,42 80,50 100,44 C115,38 125,30 140,28 C158,25 165,35 185,30 C200,26 215,18 235,15 C250,12 265,14 280,10 L280,70 L0,70 Z"
+                fill="url(#chart-grad)"
+              />
+              {/* Line */}
+              <polyline
+                fill="none"
+                stroke="#2F6B4F"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                points="0,55 20,52 35,48 55,45 70,42 80,50 100,44 115,38 125,30 140,28 158,25 165,35 185,30 200,26 215,18 235,15 250,12 265,14 280,10"
+              />
+              {/* Last dot */}
+              <circle cx="280" cy="10" r="2.5" fill="#2F6B4F" />
+              <circle cx="280" cy="10" r="5" fill="#2F6B4F" fillOpacity="0.2" />
+            </svg>
+          </div>
+
+          {/* Ledger rows preview */}
+          <div className="space-y-2 mb-6">
+            {[
+              { ref: "L-05", text: "Stop-loss lesson read", tag: "lesson" },
+              { ref: "T-07", text: "Bought 5 × INFY.NS", tag: "trade" },
+              { ref: "R-02", text: "3 exits — pattern noted", tag: "insight" },
+            ].map((row) => (
+              <div key={row.ref} className="grid grid-cols-[2.5rem_1fr_auto] gap-2 items-center">
+                <span className="font-mono text-[8px] text-paper/30 tabular-nums">{row.ref}</span>
+                <span className="font-mono text-[9px] text-paper/55 truncate">{row.text}</span>
+                <span className={`font-mono text-[7px] uppercase px-1.5 py-0.5 border tracking-widest ${
+                  row.tag === "lesson" ? "border-stamp/40 text-stamp/70"
+                  : row.tag === "trade" ? "border-paper/15 text-paper/40"
+                  : "border-paper/10 text-paper/25"
+                }`}>{row.tag}</span>
+              </div>
+            ))}
+          </div>
+
           <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-paper/30 mb-6">
             Continue where you left off
           </p>
@@ -70,7 +135,7 @@ export default function LoginPage() {
           </h1>
           <p className="font-body text-sm text-paper/50 leading-relaxed max-w-xs">
             Every lesson you completed, every trade you placed, every reflection
-            waiting to be read — it&rsquo;s all still there.
+            waiting to be read &mdash; it&apos;s all still there.
           </p>
         </div>
 

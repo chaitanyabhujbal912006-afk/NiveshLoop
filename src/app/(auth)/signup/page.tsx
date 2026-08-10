@@ -53,6 +53,11 @@ export default function SignupPage() {
           className="absolute inset-0 opacity-[0.04]"
           style={{ backgroundImage: "repeating-linear-gradient(transparent,transparent 47px,rgba(92,122,99,1) 47px,rgba(92,122,99,1) 48px)" }}
         />
+        {/* Dot grid */}
+        <div
+          className="absolute inset-0 opacity-[0.07]"
+          style={{ backgroundImage: "radial-gradient(circle, rgba(92,122,99,1) 1px, transparent 1px)", backgroundSize: "20px 20px" }}
+        />
         {/* Red spine */}
         <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-stamp/90" />
 
@@ -71,7 +76,7 @@ export default function SignupPage() {
             <span className="text-stamp">in your hand.</span><br />
             <span className="italic text-paper/60">Not one rupee real.</span>
           </h1>
-          <div className="space-y-4">
+          <div className="space-y-4 mb-6">
             {[
               "15 lessons, each ending with a trade",
               "Your behavior reflected back to you",
@@ -83,6 +88,35 @@ export default function SignupPage() {
                 <p className="font-body text-sm text-paper/60">{t}</p>
               </div>
             ))}
+          </div>
+
+          {/* Lesson progress bars — decorative */}
+          <div className="border border-paper/10 p-3" style={{ background: "rgba(255,255,255,0.03)" }}>
+            <p className="font-mono text-[8px] uppercase tracking-widest text-paper/30 mb-3">Lesson progress</p>
+            <div className="space-y-2">
+              {[
+                { label: "What is a stock?", pct: 100 },
+                { label: "Market orders", pct: 72 },
+                { label: "Stop-losses", pct: 30 },
+                { label: "Diversification", pct: 0 },
+              ].map((item) => (
+                <div key={item.label}>
+                  <div className="flex justify-between mb-1">
+                    <span className="font-mono text-[8px] text-paper/35 truncate">{item.label}</span>
+                    <span className="font-mono text-[8px] text-paper/30 tabular-nums">{item.pct}%</span>
+                  </div>
+                  <div className="h-1 bg-paper/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${item.pct}%`,
+                        background: item.pct === 100 ? "#8C2F39" : "rgba(47,107,79,0.6)"
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
