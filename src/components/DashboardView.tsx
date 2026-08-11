@@ -189,6 +189,13 @@ export function DashboardView({
             </div>
             <div className="flex items-center gap-3">
               <Link
+                href="/scam-checker"
+                className="font-mono text-xs text-ink/80 hover:text-stamp border border-rule/30 px-3 py-1.5 rounded-sm transition-colors flex items-center gap-1"
+              >
+                <span>Scam Checker</span>
+                <span>🛡️</span>
+              </Link>
+              <Link
                 href="/lessons"
                 className="font-mono text-xs bg-stamp/10 text-stamp border border-stamp/30 px-3 py-1.5 rounded-sm hover:bg-stamp hover:text-paper transition-all flex items-center gap-1.5"
               >
