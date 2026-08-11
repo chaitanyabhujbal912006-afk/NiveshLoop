@@ -5,6 +5,7 @@
 ![NiveshLoop Passbook Architecture](https://img.shields.io/badge/Stack-Next.js%2014%20|%20TypeScript%20|%20TailwindCSS%20|%20Supabase-1E2A44?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-8C2F39?style=flat-square)
 ![Build Status](https://img.shields.io/badge/Build-Passing-2F6B4F?style=flat-square)
+![PWA Ready](https://img.shields.io/badge/PWA-Ready-2F6B4F?style=flat-square)
 
 ---
 
@@ -27,7 +28,7 @@ Unlike generic dark-mode fintech UIs with neon accents, NiveshLoop's visual iden
 - **Fountain Pen Ink (`#1E2A44`)**: High-contrast indigo body text.
 - **Oxblood Stamp Mark (`#8C2F39`)**: Physical validation mark awarded exclusively for Genuine Lesson & Habit Milestone completions (never for trade returns).
 - **Tabular Monospaced Numbers**: Every currency figure (`₹`) uses monospaced tabular numerals (`font-mono tabular-nums`).
-- **Interactive Visual Charts**: SVG-based sparklines, line graphs, asset allocation bars, and candlestick charts (unlocked dynamically via Lesson 6).
+- **Interactive Visual Elements**: Hyperrealistic 3D tilt passbook, 60fps price-chart canvas engine, live stock tickers, 3D money vault notes, and interactive feature sandboxes.
 
 ---
 
@@ -66,62 +67,72 @@ NiveshLoop runs on a zero-cost infrastructure stack targeting Vercel & Supabase 
    - Detects panic selling within 24 hours of buying.
    - Identifies unhedged buys (missing stop-loss).
    - Flags single-stock concentration risk (>70% portfolio allocation).
-3. **Habit Badges**:
-   - Awards non-decaying habit stamps (`Steady Hand`, `Diversified`, `Patient Holder`, `Did the Homework`, `Cooled Off`).
-4. **Interactive Visual Charts**:
-   - Passbook-styled SVG line charts, candlestick charts with hover crosshairs, and asset allocation breakdown bars.
+3. **Habit Badges System**:
+   - Awards non-decaying habit stamps (`Steady Hand`, `Diversified`, `Patient Holder`, `Did the Homework`, `Cooled Off`, `Diamond Hands`, `Patience Master`, `Disciplined Investor`).
+4. **SEBI Scam & Tip Checker (`/scam-checker`)**:
+   - Scans WhatsApp forwards and Telegram stock tips against SEBI fraud advisories (guaranteed returns, unregistered channels, urgency pressure, pump-and-dump signals).
+5. **Regional Language Support (`EN` | `HI - हिंदी`)**:
+   - Full English and Hindi translation toggle for UI labels, passbook headings, and disclaimers.
+
+---
+
+## 🌐 1-Click Vercel & Supabase Deployment Guide
+
+### Prerequisites
+
+- Free [Supabase Account](https://supabase.com)
+- Free [Vercel Account](https://vercel.com)
+
+### 1. Database Setup (Supabase)
+
+1. Create a new Supabase project named `niveshloop`.
+2. Open **SQL Editor** in Supabase dashboard.
+3. Run `supabase/schema.sql` to create tables and RLS security policies.
+4. Run `supabase/seed-lessons.sql` to populate curriculum lessons.
+
+### 2. Deployment on Vercel
+
+1. Push your code to GitHub.
+2. Import the repository in [Vercel](https://vercel.com/new).
+3. Configure Environment Variables in Vercel settings:
+   - `NEXT_PUBLIC_SUPABASE_URL` = `https://your-project.supabase.co`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = `your-anon-key`
+   - `SUPABASE_SERVICE_ROLE_KEY` = `your-service-role-key`
+4. Click **Deploy**. Vercel will automatically build using `vercel.json` settings.
 
 ---
 
 ## 💻 Local Development Setup
 
-### Prerequisites
+```bash
+# Clone repository
+git clone https://github.com/chaitanyabhujbal912006-afk/NiveshLoop.git
+cd NiveshLoop
 
-- Node.js 18+
-- Free [Supabase](https://supabase.com) account
+# Install dependencies
+npm install
 
-### Setup Steps
+# Configure environment variables (.env.local)
+cp .env.example .env.local
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/chaitanyabhujbal912006-afk/NiveshLoop.git
-   cd NiveshLoop
-   ```
+# Run development server
+npm run dev
 
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Configure Environment Variables**:
-   Create `.env.local` based on `.env.example`:
-   ```bash
-   NEXT_PUBLIC_SUPABASE_URL=https://your-supabase-project.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-   PRICE_API_BASE_URL=https://query1.finance.yahoo.com/v8/finance/chart
-   ```
-
-4. **Initialize Database Schema**:
-   Run `supabase/schema.sql` and `supabase/seed-lessons.sql` in your Supabase SQL Editor.
-
-5. **Run Development Server & Tests**:
-   ```bash
-   npm run test
-   npm run dev
-   ```
+# Run unit test suite
+npx vitest run
+```
 
 ---
 
-## 🛡️ Safety & Gamification Guardrails
+## 📄 Safety Disclaimer
 
-- **Zero Real Money / Real Brokerage Integration**: Simulation environment only.
-- **Educational Disclaimers**: Every screen displaying stock prices carries a visible disclaimer: *"Simulated portfolio. Prices delayed ~15 minutes. Not real money. Not investment advice."*
-- **No Advice Copy**: Insight messages describe historical patterns in the user's own past trades — they never recommend future actions.
-- **No Activity/Streak Mechanics**: Badges celebrate discipline and reflection, never trade frequency or returns.
+NiveshLoop is an **educational simulation platform**.
+- Portfolio balances and stock trades are **100% simulated**.
+- Prices are delayed ~15 minutes and sourced for educational demonstration.
+- Nothing on NiveshLoop constitutes real financial or investment advice.
 
 ---
 
 ## 📜 License
 
-MIT License. Educational simulation product built for first-time investors.
+Distributed under the MIT License. See `LICENSE` for details.
