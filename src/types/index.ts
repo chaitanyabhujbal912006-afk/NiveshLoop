@@ -15,6 +15,14 @@ export interface Portfolio {
 export interface PriceQuote {
   symbol: string;
   price: number;
+  change?: number;
+  changePercent?: number;
+  dayHigh?: number;
+  dayLow?: number;
+  volume?: number;
+  prevClose?: number;
+  fiftyTwoWeekHigh?: number;
+  fiftyTwoWeekLow?: number;
   fetchedAt: string; // ISO timestamp — always show this next to any price in the UI
 }
 

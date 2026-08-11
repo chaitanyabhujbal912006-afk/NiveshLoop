@@ -13,6 +13,11 @@ const POPULAR_SYMBOLS = [
   { symbol: "INFY.NS", name: "Infosys" },
   { symbol: "HDFCBANK.NS", name: "HDFC Bank" },
   { symbol: "TATAMOTORS.NS", name: "Tata Motors" },
+  { symbol: "SBIN.NS", name: "SBI" },
+  { symbol: "ICICIBANK.NS", name: "ICICI Bank" },
+  { symbol: "ITC.NS", name: "ITC" },
+  { symbol: "BHARTIARTL.NS", name: "Airtel" },
+  { symbol: "LT.NS", name: "L&T" },
 ];
 
 export function SymbolSearch({ onSelectQuote }: SymbolSearchProps) {

@@ -497,6 +497,11 @@ export function DashboardView({
                           price={selectedQuote.price}
                           side={tradeSide}
                           completedLessonSlugs={completedLessonSlugs}
+                          dayHigh={selectedQuote.dayHigh}
+                          dayLow={selectedQuote.dayLow}
+                          volume={selectedQuote.volume}
+                          fiftyTwoWeekHigh={selectedQuote.fiftyTwoWeekHigh}
+                          fiftyTwoWeekLow={selectedQuote.fiftyTwoWeekLow}
                           onSubmit={handleTradeSubmit}
                         />
                       </>

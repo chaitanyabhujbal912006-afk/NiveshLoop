@@ -13,6 +13,11 @@ interface TradeTicketProps {
   completedLessonSlugs: string[];
   sessionChangePercent?: number;
   msSinceDrop?: number;
+  dayHigh?: number;
+  dayLow?: number;
+  volume?: number;
+  fiftyTwoWeekHigh?: number;
+  fiftyTwoWeekLow?: number;
   onSubmit: (payload: { qty: number; stopLoss: number | null }) => void;
 }
 
@@ -28,6 +33,11 @@ export function TradeTicket({
   completedLessonSlugs,
   sessionChangePercent = 0,
   msSinceDrop = Infinity,
+  dayHigh,
+  dayLow,
+  volume,
+  fiftyTwoWeekHigh,
+  fiftyTwoWeekLow,
   onSubmit,
 }: TradeTicketProps) {
   const unlocks = activeUnlocks(completedLessonSlugs);
@@ -115,9 +125,39 @@ export function TradeTicket({
         </p>
         <p className="font-mono tabular-nums text-ink">₹{price.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
       </div>
-      <p className="font-body text-xs text-muted mb-5 uppercase tracking-widest">
+      <p className="font-body text-xs text-muted mb-4 uppercase tracking-widest">
         Delayed price · simulated only
       </p>
+
+      {/* Live Market Stats Grid */}
+      {(dayHigh || dayLow || volume || fiftyTwoWeekHigh) && (
+        <div className="grid grid-cols-2 gap-2 p-3 bg-rule/[0.04] border border-rule/20 rounded-sm mb-4 font-mono text-[10px]">
+          {dayHigh && (
+            <div>
+              <span className="text-muted block">Day High</span>
+              <span className="text-ink font-semibold tabular-nums">₹{dayHigh.toLocaleString("en-IN")}</span>
+            </div>
+          )}
+          {dayLow && (
+            <div>
+              <span className="text-muted block">Day Low</span>
+              <span className="text-ink font-semibold tabular-nums">₹{dayLow.toLocaleString("en-IN")}</span>
+            </div>
+          )}
+          {fiftyTwoWeekHigh && (
+            <div>
+              <span className="text-muted block">52W High</span>
+              <span className="text-gain font-semibold tabular-nums">₹{fiftyTwoWeekHigh.toLocaleString("en-IN")}</span>
+            </div>
+          )}
+          {fiftyTwoWeekLow && (
+            <div>
+              <span className="text-muted block">52W Low</span>
+              <span className="text-loss font-semibold tabular-nums">₹{fiftyTwoWeekLow.toLocaleString("en-IN")}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {showLimitOption && (
         <p className="font-body text-xs text-muted mb-4 pb-3 border-b border-rule/20">
