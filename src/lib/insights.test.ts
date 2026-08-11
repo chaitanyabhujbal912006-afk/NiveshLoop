@@ -97,4 +97,25 @@ describe("Behavioral Insights Engine", () => {
     expect(divBadge?.earned).toBe(true);
     expect(cooledBadge?.earned).toBe(true);
   });
+
+  it("evaluates diamond_hands, patience_master, and disciplined_investor badges", () => {
+    const holdings: HoldingRecord[] = [
+      { id: "1", symbol: "TCS.NS", qty: 5, avg_price: 3500 },
+    ];
+    const transactions: TransactionRecord[] = [
+      { id: "t1", symbol: "TCS.NS", side: "buy", qty: 5, price: 3500, had_stop_loss: true, created_at: "2026-08-01T10:00:00Z" },
+      { id: "t2", symbol: "INFY.NS", side: "buy", qty: 3, price: 1500, had_stop_loss: true, created_at: "2026-08-03T10:00:00Z" },
+      { id: "t3", symbol: "HDFC.NS", side: "buy", qty: 2, price: 1600, had_stop_loss: true, created_at: "2026-08-05T10:00:00Z" },
+      { id: "t4", symbol: "WIPRO.NS", side: "buy", qty: 10, price: 450, had_stop_loss: false, created_at: "2026-08-07T10:00:00Z" },
+    ];
+
+    const badges = computeHabitBadges(holdings, transactions, 5);
+    const diamondBadge = badges.find((b) => b.id === "diamond_hands");
+    const patienceBadge = badges.find((b) => b.id === "patience_master");
+    const disciplinedBadge = badges.find((b) => b.id === "disciplined_investor");
+
+    expect(diamondBadge?.earned).toBe(true);
+    expect(patienceBadge?.earned).toBe(true);
+    expect(disciplinedBadge?.earned).toBe(true);
+  });
 });

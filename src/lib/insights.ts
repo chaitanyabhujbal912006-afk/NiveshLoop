@@ -204,6 +204,16 @@ export function computeHabitBadges(
   // 5. Cooled off: at least 1 trade placed with stop-loss or after reflecting
   const cooledOff = transactions.some((t) => t.had_stop_loss);
 
+  // 6. Diamond hands: active holding present + no quick sells
+  const diamondHands = activeHoldings.length >= 1 && detectQuickSells(transactions) === null && transactions.length >= 4;
+
+  // 7. Patience master: 3+ transactions spread over time with no overtrading
+  const patienceMaster = transactions.length >= 3 && detectQuickSells(transactions) === null;
+
+  // 8. Disciplined investor: 3+ buy orders with stop-loss attached
+  const stopLossBuys = transactions.filter((t) => t.side === "buy" && t.had_stop_loss).length;
+  const disciplinedInvestor = stopLossBuys >= 3;
+
   return [
     {
       id: "steady_hand",
@@ -234,6 +244,24 @@ export function computeHabitBadges(
       label: BADGES.cooled_off.label,
       description: BADGES.cooled_off.description,
       earned: cooledOff,
+    },
+    {
+      id: "diamond_hands",
+      label: BADGES.diamond_hands.label,
+      description: BADGES.diamond_hands.description,
+      earned: diamondHands,
+    },
+    {
+      id: "patience_master",
+      label: BADGES.patience_master.label,
+      description: BADGES.patience_master.description,
+      earned: patienceMaster,
+    },
+    {
+      id: "disciplined_investor",
+      label: BADGES.disciplined_investor.label,
+      description: BADGES.disciplined_investor.description,
+      earned: disciplinedInvestor,
     },
   ];
 }

@@ -81,7 +81,10 @@ export type BadgeId =
   | "diversified"
   | "patient_holder"
   | "did_the_homework"
-  | "cooled_off";
+  | "cooled_off"
+  | "diamond_hands"
+  | "patience_master"
+  | "disciplined_investor";
 
 export const BADGES: Record<BadgeId, { label: string; description: string }> = {
   steady_hand: {
@@ -103,5 +106,17 @@ export const BADGES: Record<BadgeId, { label: string; description: string }> = {
   cooled_off: {
     label: "Cooled Off",
     description: "Paused on a reflective prompt and chose not to sell in the heat of the moment.",
+  },
+  diamond_hands: {
+    label: "Diamond Hands",
+    description: "Held a position through simulated market drawdowns without panic selling.",
+  },
+  patience_master: {
+    label: "Patience Master",
+    description: "Maintained cash discipline and avoided overtrading between positions.",
+  },
+  disciplined_investor: {
+    label: "Disciplined Investor",
+    description: "Attached stop-loss protection to 3 or more buy orders.",
   },
 };

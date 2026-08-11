@@ -14,6 +14,7 @@ import { PriceChart } from "./PriceChart";
 import { AllocationBar } from "./AllocationBar";
 import { PortfolioGauge } from "./PortfolioGauge";
 import { Sparkline } from "./Sparkline";
+import { LanguageToggle } from "./LanguageToggle";
 import { hasUnlocked } from "@/lib/unlocks";
 import type { PriceQuote, TradeSide } from "@/types";
 import type { InsightResult, BadgeResult } from "@/lib/insights";
@@ -188,6 +189,7 @@ export function DashboardView({
               <p className="font-display text-sm text-ink font-medium">{userEmail}</p>
             </div>
             <div className="flex items-center gap-3">
+              <LanguageToggle />
               <Link
                 href="/scam-checker"
                 className="font-mono text-xs text-ink/80 hover:text-stamp border border-rule/30 px-3 py-1.5 rounded-sm transition-colors flex items-center gap-1"

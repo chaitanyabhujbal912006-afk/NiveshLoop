@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { FeatureSandbox } from "@/components/FeatureSandbox";
 import { MoneyVaultWidget } from "@/components/MoneyVaultWidget";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 /* ─── Ticker data ────────────────────────────────────────────────────────── */
 const TICKER_ITEMS = [
@@ -321,7 +322,8 @@ export default function HomePage() {
           <span className="font-display text-ink font-semibold text-lg tracking-tight">
             Nivesh<span className="text-stamp">Loop</span>
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <LanguageToggle />
             <Link href="/login"
               className="font-mono text-xs text-muted hover:text-ink transition-colors uppercase tracking-widest px-3 py-2">
               Sign in
