@@ -144,55 +144,62 @@ export function DashboardView({
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-parchment-base grid-bg bg-grid-pattern relative">
+      {/* Background watermark */}
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-12 z-0 text-watermark font-display pointer-events-none">
+        पासबुक
+      </div>
+
       {/* ── LIVE MARKET INDICES TICKER BAR ── */}
-      <div className="bg-ink text-paper text-xs border-b border-rule/20 py-2 px-4 sm:px-8 flex items-center justify-between overflow-x-auto">
-        <div className="flex items-center gap-6 shrink-0">
-          <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-paper/40">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gain opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-gain"></span>
-            </span>
-            Simulated Market · Live
-          </div>
-          {[
-            { name: "NIFTY 50", val: "22,147.90", chg: "+0.6%", up: true },
-            { name: "SENSEX", val: "73,212.40", chg: "+0.7%", up: true },
-            { name: "BANK NIFTY", val: "46,588.20", chg: "+0.4%", up: true },
-            { name: "INDIA VIX", val: "13.82", chg: "-2.1%", up: false },
-          ].map((m) => (
-            <div key={m.name} className="flex items-center gap-2 font-mono text-[10px]">
-              <span className="text-paper/50">{m.name}</span>
-              <span className="tabular-nums text-paper/80">{m.val}</span>
-              <span className={`tabular-nums font-semibold ${m.up ? "text-gain" : "text-loss"}`}>
-                {m.chg}
+      <div className="w-full bg-ink text-paper font-mono text-xs py-1.5 overflow-hidden relative z-50 border-b-2 border-stamp shadow-sm">
+        <div className="flex whitespace-nowrap animate-ticker">
+          {[...Array(2)].map((_, repeat) => (
+            <div key={repeat} className="flex items-center shrink-0">
+              <span className="mx-4 flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gain opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-gain"></span>
+                </span>
+                <span className="text-paper/40 uppercase tracking-widest text-[9px]">Simulated · Live</span>
               </span>
+              {[
+                { name: "NIFTY 50", val: "22,147.90", chg: "+0.6%", up: true },
+                { name: "SENSEX", val: "73,212.40", chg: "+0.7%", up: true },
+                { name: "BANK NIFTY", val: "46,588.20", chg: "+0.4%", up: true },
+                { name: "INDIA VIX", val: "13.82", chg: "-2.1%", up: false },
+              ].map((m) => (
+                <span key={`${repeat}-${m.name}`} className="mx-5 inline-flex items-center gap-1.5">
+                  <span className="text-paper/50">{m.name}</span>
+                  <span className="tabular-nums text-paper/80">{m.val}</span>
+                  <span className={`tabular-nums font-semibold ${m.up ? "text-gain" : "text-loss"}`}>{m.chg}</span>
+                </span>
+              ))}
+              <span className="mx-3 text-paper/15">│</span>
             </div>
           ))}
-        </div>
-        <div className="hidden md:flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-paper/30">
-          Delayed 15m · Practice Mode
         </div>
       </div>
 
       {/* ── PASSBOOK HEADER ─────────────────────────────────────────────── */}
-      <div className="border-b border-rule/25 bg-paper/95 backdrop-blur-md relative overflow-hidden passbook-card">
-        {/* Dotgrid passbook texture */}
-        <div className="absolute inset-0 dotgrid-bg opacity-30 pointer-events-none" aria-hidden />
-        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-stamp via-stamp/80 to-stamp" />
+      <div className="relative z-10 border-b-2 border-ink shadow-md backdrop-blur-md overflow-hidden">
+        {/* Grid texture */}
+        <div className="absolute inset-0 grid-bg bg-grid-pattern opacity-40 pointer-events-none" aria-hidden />
+        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-stamp via-stamp/80 to-stamp" />
 
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-8">
+        <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-6 pb-4 gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-stamp font-bold bg-stamp/10 px-2 py-0.5 rounded-xs border border-stamp/20">
-                  Simulated Account
+              <div className="flex items-center gap-3 mb-1.5">
+                <span className="stamp-border inline-block">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-stamp font-bold bg-stamp/10 px-2.5 py-1">
+                    Simulated Account
+                  </span>
                 </span>
                 <span className="font-mono text-[9px] uppercase tracking-widest text-muted">
                   DEMO-001
                 </span>
               </div>
-              <p className="font-display text-base text-ink font-semibold flex items-center gap-2">
+              <p className="font-display text-lg text-ink font-bold flex items-center gap-2">
                 <span>{userEmail}</span>
               </p>
             </div>
@@ -200,21 +207,21 @@ export function DashboardView({
               <LanguageToggle />
               <Link
                 href="/scam-checker"
-                className="font-mono text-xs font-medium text-ink/80 hover:text-stamp border border-rule/30 px-3 py-1.5 rounded-xs hover:bg-rule/10 transition-all flex items-center gap-1.5 shadow-xs"
+                className="font-mono text-xs font-medium text-ink/80 hover:text-stamp border-2 border-ink/20 px-3.5 py-2 hover:bg-ink/5 transition-all flex items-center gap-1.5 deep-shadow hover:-translate-y-0.5"
               >
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
                 <span>Scam Checker</span>
-                <span>🛡️</span>
               </Link>
               <Link
                 href="/lessons"
-                className="font-mono text-xs font-bold bg-stamp text-paper px-3.5 py-1.5 rounded-xs hover:opacity-90 transition-all flex items-center gap-1.5 shadow-sm"
+                className="font-mono text-xs font-bold bg-stamp text-paper px-4 py-2 hover:opacity-90 transition-all flex items-center gap-1.5 shadow-[4px_4px_0_rgba(26,26,46,1)] active:shadow-[2px_2px_0_rgba(26,26,46,1)] active:translate-x-0.5 active:translate-y-0.5"
               >
                 <span>Curriculum</span>
                 <span className="font-sans">→</span>
               </Link>
               <button
                 onClick={handleSignOut}
-                className="font-mono text-xs text-muted hover:text-stamp border border-rule/25 px-3 py-1.5 rounded-xs hover:border-stamp/30 transition-colors"
+                className="font-mono text-xs text-muted hover:text-stamp border-2 border-ink/15 px-3.5 py-2 hover:border-stamp/30 transition-colors"
               >
                 Sign out
               </button>
@@ -233,18 +240,20 @@ export function DashboardView({
               <PortfolioGauge portfolioValue={totalPortfolioValuation} />
             </motion.div>
 
-            {/* Stats grid */}
-            <div className="grid grid-cols-3 gap-px border border-rule/30 rounded-xs overflow-hidden shadow-md">
+            {/* Stats grid — deep shadow cards */}
+            <div className="grid grid-cols-3 gap-4">
               {[
                 {
                   label: "Cash balance",
                   node: <InkNumber value={initialCash} className="text-2xl font-bold text-ink" />,
                   extra: null,
+                  rotate: "-rotate-1",
                 },
                 {
                   label: "Portfolio value",
                   node: <InkNumber value={totalPortfolioValuation} className="text-2xl font-bold text-ink" />,
                   extra: null,
+                  rotate: "rotate-1",
                 },
                 {
                   label: "Total P&L",
@@ -261,42 +270,45 @@ export function DashboardView({
                       {pnl >= 0 ? "+" : ""}{((pnl / 100000) * 100).toFixed(2)}%
                     </span>
                   ) : null,
+                  rotate: "-rotate-1",
                 },
               ].map((item) => (
-                <div
+                <motion.div
                   key={item.label}
-                  className={`bg-paper/90 px-4 py-3.5 transition-all duration-300 ${
+                  whileHover={{ rotate: 0, y: -4 }}
+                  transition={{ duration: 0.2 }}
+                  className={`border-2 border-ink px-5 py-4 deep-shadow ${item.rotate} transition-all cursor-default ${
                     item.label === "Total P&L" && pnl !== 0
-                      ? pnl >= 0 ? "glow-border-gain bg-gain/5" : "glow-border-stamp bg-loss/5"
-                      : ""
+                      ? pnl >= 0 ? "border-gain/60 bg-gain/5" : "border-loss/60 bg-loss/5"
+                      : "bg-paper"
                   }`}
                 >
-                  <p className="font-mono text-[9px] uppercase tracking-widest text-muted/80 font-medium mb-1">{item.label}</p>
+                  <p className="font-mono text-[9px] uppercase tracking-widest text-muted/80 font-medium mb-1.5">{item.label}</p>
                   {item.node}
                   {item.extra}
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
 
-          {/* Passbook page tabs */}
-          <div className="flex items-end gap-1 -mb-px">
+          {/* Passbook page tabs — bold border-ink style */}
+          <div className="flex items-end gap-0 -mb-px">
             {TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={[
-                  "relative px-6 py-3 font-display text-sm font-semibold border border-b-0 rounded-t-xs transition-all duration-200 select-none",
+                  "relative px-8 py-3.5 font-mono text-xs font-bold uppercase tracking-widest border-2 border-b-0 transition-all duration-200 select-none",
                   activeTab === tab.id
-                    ? "bg-paper border-rule/35 text-ink z-10 shadow-sm"
-                    : "bg-rule/[0.06] border-transparent text-muted hover:text-ink hover:bg-rule/[0.1]",
+                    ? "bg-paper border-ink text-ink z-10 shadow-md -translate-y-0.5"
+                    : "bg-ink/5 border-transparent text-muted hover:text-ink hover:bg-ink/10",
                 ].join(" ")}
               >
                 {tab.label}
                 {activeTab === tab.id && (
                   <motion.div
                     layoutId="tab-indicator"
-                    className="absolute bottom-0 inset-x-0 h-0.5 bg-stamp"
+                    className="absolute bottom-0 inset-x-0 h-1 bg-stamp"
                   />
                 )}
               </button>
@@ -306,7 +318,7 @@ export function DashboardView({
       </div>
 
       {/* ── TAB CONTENT ─────────────────────────────────────────────────── */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-8 py-8">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-10 py-10">
         <AnimatePresence mode="wait">
           {activeTab === "ledger" && (
             <motion.div
@@ -324,8 +336,8 @@ export function DashboardView({
 
               {/* Holdings ledger */}
               <div className="mb-8">
-                <div className="flex justify-between items-baseline mb-3">
-                  <h2 className="font-display text-xl font-semibold text-ink">Holdings</h2>
+                <div className="flex justify-between items-end mb-4 border-b-2 border-ink pb-3">
+                  <h2 className="font-display text-2xl font-bold text-ink -rotate-1">Holdings</h2>
                   <span className="font-mono text-xs text-muted">{activeHoldings.length} positions</span>
                 </div>
 
@@ -343,8 +355,8 @@ export function DashboardView({
                     </button>
                   </div>
                 ) : (
-                  <div className="border border-rule/30 rounded-sm overflow-hidden">
-                    <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-0 text-[10px] font-mono uppercase tracking-widest text-muted bg-rule/[0.04] border-b border-rule/20 px-5 py-2.5">
+                  <div className="border-2 border-ink overflow-hidden deep-shadow">
+                    <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-0 text-[10px] font-mono uppercase tracking-widest text-paper bg-ink border-b-2 border-ink px-5 py-3">
                       <span>Symbol</span>
                       <span className="text-right px-4">Chart</span>
                       <span className="text-right px-4">Qty</span>
@@ -363,7 +375,7 @@ export function DashboardView({
                           initial={{ opacity: 0, x: -12 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.3, delay: idx * 0.05 }}
-                          className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-0 px-5 py-3.5 border-b border-rule/15 last:border-b-0 hover:bg-rule/[0.03] transition-colors group"
+                          className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-0 px-5 py-4 border-b border-ink/10 last:border-b-0 hover:bg-ink/[0.03] hover:-translate-y-0.5 transition-all group cursor-default"
                         >
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-sm font-medium text-ink">{h.symbol}</span>
@@ -408,7 +420,10 @@ export function DashboardView({
 
               {/* Transaction history */}
               <div>
-                <h2 className="font-display text-xl font-semibold text-ink mb-3">Activity</h2>
+                <div className="flex items-end mb-4 border-b-2 border-ink pb-3">
+                  <h2 className="font-display text-2xl font-bold text-ink -rotate-1">Activity</h2>
+                  <span className="font-mono text-xs text-stamp ml-4 mb-0.5 tracking-widest">// TRANSACTION LOG</span>
+                </div>
                 <TransactionHistory transactions={initialTransactions} />
               </div>
             </motion.div>
@@ -658,9 +673,13 @@ export function DashboardView({
       </div>
 
       {/* Disclaimers */}
-      <footer className="border-t border-rule/20 py-6 px-4 sm:px-8 text-center text-xs text-muted font-body max-w-5xl mx-auto mt-8">
-        Simulated portfolio. Prices delayed ~15 minutes and sourced for educational use.
-        Not real money. Not investment advice. NiveshLoop simulation environment.
+      <footer className="relative z-10 border-t-2 border-ink py-8 px-6 sm:px-10 text-center max-w-6xl mx-auto mt-12">
+        <div className="stamp-border inline-block transform -rotate-1 mb-3">
+          <span className="font-mono text-[9px] uppercase tracking-widest text-stamp bg-stamp/5 px-3 py-1 font-bold">Disclaimer</span>
+        </div>
+        <p className="font-body text-xs text-muted leading-relaxed max-w-lg mx-auto">
+          Simulated portfolio · Prices delayed ~15 minutes · Educational use only · Not real money · Not investment advice · NiveshLoop simulation environment
+        </p>
       </footer>
     </div>
   );
