@@ -395,17 +395,51 @@ export default function HomePage() {
   const t = TRANSLATIONS[lang];
 
   return (
-    <div className="min-h-screen bg-paper overflow-x-hidden">
+    <div className="min-h-screen bg-parchment-base grid-bg bg-grid-pattern text-on-background overflow-x-hidden flex flex-col relative">
+      {/* Rotated Background Watermark */}
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-12 z-0 text-watermark font-display pointer-events-none">
+        निवेशलूप
+      </div>
 
-      {/* ══ NAV ══════════════════════════════════════════════════════════ */}
+      {/* ══ TOP TICKER BAR ════════════════════════════════════════════════ */}
+      <div className="w-full bg-ink text-paper font-mono text-xs py-1.5 overflow-hidden relative z-50 border-b-2 border-stamp shadow-sm">
+        <div className="flex whitespace-nowrap animate-ticker">
+          <span className="mx-6 flex items-center gap-1.5">BSE SENSEX 73,730.16 <span className="text-loss font-semibold">▼ -0.5%</span></span>
+          <span className="mx-6 flex items-center gap-1.5">NIFTY 50 22,419.95 <span className="text-gain font-semibold">▲ +0.2%</span></span>
+          <span className="mx-6 flex items-center gap-1.5">RELIANCE 2,930.50 <span className="text-loss font-semibold">▼ -1.2%</span></span>
+          <span className="mx-6 flex items-center gap-1.5">TCS 3,845.00 <span className="text-gain font-semibold">▲ +0.8%</span></span>
+          <span className="mx-6 flex items-center gap-1.5">HDFC BANK 1,530.20 <span className="text-loss font-semibold">▼ -0.3%</span></span>
+          {/* Infinite loop copy */}
+          <span className="mx-6 flex items-center gap-1.5">BSE SENSEX 73,730.16 <span className="text-loss font-semibold">▼ -0.5%</span></span>
+          <span className="mx-6 flex items-center gap-1.5">NIFTY 50 22,419.95 <span className="text-gain font-semibold">▲ +0.2%</span></span>
+          <span className="mx-6 flex items-center gap-1.5">RELIANCE 2,930.50 <span className="text-loss font-semibold">▼ -1.2%</span></span>
+          <span className="mx-6 flex items-center gap-1.5">TCS 3,845.00 <span className="text-gain font-semibold">▲ +0.8%</span></span>
+          <span className="mx-6 flex items-center gap-1.5">HDFC BANK 1,530.20 <span className="text-loss font-semibold">▼ -0.3%</span></span>
+        </div>
+      </div>
+
+      {/* ══ NAV BAR ══════════════════════════════════════════════════════ */}
       <motion.nav
         style={{ backgroundColor: navBg, borderBottomColor: navBorder }}
-        className="fixed top-0 inset-x-0 z-50 border-b backdrop-blur-sm"
+        className="sticky top-0 inset-x-0 z-40 border-b-2 border-ink shadow-md backdrop-blur-md"
       >
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 flex justify-between items-center h-14">
-          <span className="font-display text-ink font-semibold text-lg tracking-tight">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 flex justify-between items-center h-16">
+          <Link href="/" className="font-display text-ink font-bold text-2xl tracking-tight flex items-center gap-1">
             Nivesh<span className="text-stamp">Loop</span>
-          </span>
+          </Link>
+
+          <div className="hidden md:flex gap-8 items-center">
+            <Link href="/lessons" className="text-ink font-mono text-xs uppercase tracking-widest hover:text-stamp hover:-translate-y-0.5 transition-all">
+              Curriculum
+            </Link>
+            <Link href="/dashboard" className="text-ink font-mono text-xs uppercase tracking-widest hover:text-stamp hover:-translate-y-0.5 transition-all">
+              Dashboard
+            </Link>
+            <Link href="/scam-checker" className="text-ink font-mono text-xs uppercase tracking-widest hover:text-stamp hover:-translate-y-0.5 transition-all">
+              Scam Checker
+            </Link>
+          </div>
+
           <div className="flex items-center gap-3">
             <LanguageToggle />
             <Link href="/login"
@@ -413,7 +447,7 @@ export default function HomePage() {
               {t.signIn}
             </Link>
             <Link href="/signup"
-              className="font-mono text-xs font-medium bg-stamp text-paper px-5 py-2.5 hover:opacity-90 transition-opacity uppercase tracking-widest inline-flex items-center gap-2">
+              className="font-mono text-xs font-bold bg-stamp text-paper px-5 py-2.5 hover:opacity-90 transition-opacity uppercase tracking-widest inline-flex items-center gap-2 shadow-sm">
               {t.openPassbook}
             </Link>
           </div>
@@ -421,13 +455,13 @@ export default function HomePage() {
       </motion.nav>
 
       {/* ══ HERO — full screen, canvas BG, 3D passbook ════════════════ */}
-      <section className="relative min-h-screen flex flex-col justify-center pt-14 overflow-hidden">
+      <section className="relative min-h-[85vh] flex flex-col justify-center pt-8 overflow-hidden z-10">
         {/* Rich layered background */}
-        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 120% 90% at 65% 40%, rgba(140,47,57,0.07) 0%, transparent 60%), radial-gradient(ellipse 80% 60% at 20% 70%, rgba(47,107,79,0.06) 0%, transparent 60%)" }} />
+        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 120% 90% at 65% 40%, rgba(140,47,57,0.06) 0%, transparent 60%), radial-gradient(ellipse 80% 60% at 20% 70%, rgba(47,107,79,0.05) 0%, transparent 60%)" }} />
         <PriceChartCanvas />
 
         {/* Ledger lines over canvas */}
-        <div className="absolute inset-0 ledger-bg opacity-50 pointer-events-none" />
+        <div className="absolute inset-0 ledger-bg opacity-40 pointer-events-none" />
 
         {/* Deep vignette */}
         <div className="absolute inset-0 pointer-events-none"
@@ -664,20 +698,15 @@ export default function HomePage() {
         />
 
         <div className="relative z-0 max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 py-24">
-          <motion.p
+          <motion.div
             initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-            className="font-mono text-[11px] uppercase tracking-[0.25em] text-paper/25 mb-4"
+            className="flex items-end mb-12 border-b-2 border-paper/20 pb-4"
           >
-            § 03 — One loop, always
-          </motion.p>
-          <motion.h2
-            initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="font-display display-xl text-paper mb-16"
-          >
-            The loop that<br />
-            <span className="text-stamp">closes the gap.</span>
-          </motion.h2>
+            <h2 className="font-display text-4xl sm:text-5xl font-semibold text-paper -rotate-1">
+              The Audit Loop
+            </h2>
+            <span className="font-mono text-xs text-stamp ml-4 mb-1 tracking-widest">// STANDARD PROCEDURE V.1</span>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
             {[
