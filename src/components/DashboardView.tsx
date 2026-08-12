@@ -14,6 +14,7 @@ import { PriceChart } from "./PriceChart";
 import { AllocationBar } from "./AllocationBar";
 import { PortfolioGauge } from "./PortfolioGauge";
 import { Sparkline } from "./Sparkline";
+import { RealtimeTradingTerminal } from "./RealtimeTradingTerminal";
 import { LanguageToggle } from "./LanguageToggle";
 import { hasUnlocked } from "@/lib/unlocks";
 import type { PriceQuote, TradeSide } from "@/types";
@@ -440,103 +441,52 @@ export function DashboardView({
             >
               {/* ── FIRST_TRADE GATE ─────────────────────────────────── */}
               {!canTrade ? (
-                <div className="border border-dashed border-rule/35 p-10 text-center max-w-sm mx-auto mt-4">
-                  <p className="font-display text-xl font-semibold text-ink mb-2">
-                    Trading is locked
+                <div className="border-2 border-ink deep-shadow bg-paper p-10 text-center max-w-md mx-auto mt-4">
+                  <div className="stamp-border inline-block mb-3">
+                    <span className="font-mono text-xs font-bold uppercase tracking-widest text-stamp bg-stamp/10 px-3 py-1">
+                      Trading Terminal Locked
+                    </span>
+                  </div>
+                  <p className="font-display text-2xl font-bold text-ink mb-2">
+                    Complete Lesson 1 to Unlock
                   </p>
-                  <p className="font-body text-sm text-ink/70 mb-6 leading-relaxed">
-                    Complete <strong>Lesson 1 — What is a stock?</strong> to unlock
-                    your trade ticket. The lesson takes about 4 minutes.
+                  <p className="font-body text-sm text-ink/75 mb-6 leading-relaxed">
+                    Complete <strong>Lesson 1 — What is a stock?</strong> to unlock your real-time share market trading ticket.
                   </p>
                   <Link
                     href="/lessons/what-is-a-stock"
-                    className="inline-flex items-center gap-2 bg-stamp text-paper px-6 py-3 font-body font-medium text-sm hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center gap-2 bg-stamp text-paper px-6 py-3 font-mono font-bold text-xs hover:opacity-90 transition-opacity shadow-[4px_4px_0_rgba(26,26,46,1)]"
                   >
                     Go to Lesson 1 →
                   </Link>
-                  <p className="mt-4 font-mono text-[10px] text-muted uppercase tracking-widest">
-                    Unlocks automatically on completion
-                  </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8">
-                  <SymbolSearch
-                    onSelectQuote={(quote) => {
-                      setSelectedQuote(quote);
-                      setTradeSide("buy");
-                      setTradeStatus(null);
-                    }}
-                  />
-
-                  <div>
-                    {selectedQuote ? (
-                      <>
-                        <div className="flex gap-2 mb-4">
-                          {(["buy", "sell"] as TradeSide[]).map((s) => (
-                            <button
-                              key={s}
-                              onClick={() => setTradeSide(s)}
-                              className={[
-                                "flex-1 py-2 text-xs font-mono rounded-sm border capitalize transition-colors",
-                                tradeSide === s
-                                  ? "bg-stamp text-paper border-stamp"
-                                  : "bg-paper text-muted border-rule/30 hover:text-ink",
-                              ].join(" ")}
-                            >
-                              {s}
-                            </button>
-                          ))}
-                        </div>
-
-                        <AnimatePresence>
-                          {tradeStatus && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -4 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0 }}
-                              className={[
-                                "p-3 rounded-sm text-xs font-body mb-4 border",
-                                tradeStatus.success
-                                  ? "bg-gain/10 border-gain/30 text-gain"
-                                  : "bg-loss/10 border-loss/30 text-loss",
-                              ].join(" ")}
-                            >
-                              {tradeStatus.success && <Stamp label="trade-success" earned size="sm" animateOnMount />}
-                              {" "}{tradeStatus.message}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-
-                        <div className="mb-4">
-                          <PriceChart
-                            symbol={selectedQuote.symbol}
-                            currentPrice={selectedQuote.price}
-                            isCandlestickUnlocked={isCandlestickUnlocked}
-                          />
-                        </div>
-
-                        <TradeTicket
-                          symbol={selectedQuote.symbol}
-                          price={selectedQuote.price}
-                          side={tradeSide}
-                          completedLessonSlugs={completedLessonSlugs}
-                          dayHigh={selectedQuote.dayHigh}
-                          dayLow={selectedQuote.dayLow}
-                          volume={selectedQuote.volume}
-                          fiftyTwoWeekHigh={selectedQuote.fiftyTwoWeekHigh}
-                          fiftyTwoWeekLow={selectedQuote.fiftyTwoWeekLow}
-                          onSubmit={handleTradeSubmit}
-                        />
-                      </>
-                    ) : (
-                      <div className="border border-dashed border-rule/30 rounded-sm p-10 text-center h-full flex flex-col justify-center items-center">
-                        <p className="font-display text-base text-ink mb-2">Trade Ticket</p>
-                        <p className="font-body text-xs text-muted max-w-xs">
-                          Search a stock on the left to load its delayed quote.
-                        </p>
-                      </div>
+                <div className="space-y-4">
+                  <AnimatePresence>
+                    {tradeStatus && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className={[
+                          "p-4 border-2 font-mono text-xs font-bold deep-shadow",
+                          tradeStatus.success
+                            ? "bg-gain/10 border-gain text-gain"
+                            : "bg-loss/10 border-loss text-loss",
+                        ].join(" ")}
+                      >
+                        {tradeStatus.success && <Stamp label="trade-success" earned size="sm" animateOnMount />}
+                        {" "}{tradeStatus.message}
+                      </motion.div>
                     )}
-                  </div>
+                  </AnimatePresence>
+
+                  <RealtimeTradingTerminal
+                    initialQuote={selectedQuote}
+                    completedLessonSlugs={completedLessonSlugs}
+                    onSubmitTrade={handleTradeSubmit}
+                    tradeLoading={tradeLoading}
+                  />
                 </div>
               )}
             </motion.div>
