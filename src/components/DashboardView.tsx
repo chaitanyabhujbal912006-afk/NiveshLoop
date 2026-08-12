@@ -176,37 +176,45 @@ export function DashboardView({
       </div>
 
       {/* ── PASSBOOK HEADER ─────────────────────────────────────────────── */}
-      <div className="border-b border-rule/25 bg-paper relative overflow-hidden">
+      <div className="border-b border-rule/25 bg-paper/95 backdrop-blur-md relative overflow-hidden passbook-card">
         {/* Dotgrid passbook texture */}
-        <div className="absolute inset-0 dotgrid-bg opacity-40 pointer-events-none" aria-hidden />
+        <div className="absolute inset-0 dotgrid-bg opacity-30 pointer-events-none" aria-hidden />
+        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-stamp via-stamp/80 to-stamp" />
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-8">
-          <div className="flex justify-between items-center pt-5 pb-3">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-6 pb-4 gap-4">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-0.5">
-                Nivesh<span className="text-stamp">Loop</span> · Passbook
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-stamp font-bold bg-stamp/10 px-2 py-0.5 rounded-xs border border-stamp/20">
+                  Simulated Account
+                </span>
+                <span className="font-mono text-[9px] uppercase tracking-widest text-muted">
+                  DEMO-001
+                </span>
+              </div>
+              <p className="font-display text-base text-ink font-semibold flex items-center gap-2">
+                <span>{userEmail}</span>
               </p>
-              <p className="font-display text-sm text-ink font-medium">{userEmail}</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <LanguageToggle />
               <Link
                 href="/scam-checker"
-                className="font-mono text-xs text-ink/80 hover:text-stamp border border-rule/30 px-3 py-1.5 rounded-sm transition-colors flex items-center gap-1"
+                className="font-mono text-xs font-medium text-ink/80 hover:text-stamp border border-rule/30 px-3 py-1.5 rounded-xs hover:bg-rule/10 transition-all flex items-center gap-1.5 shadow-xs"
               >
                 <span>Scam Checker</span>
                 <span>🛡️</span>
               </Link>
               <Link
                 href="/lessons"
-                className="font-mono text-xs bg-stamp/10 text-stamp border border-stamp/30 px-3 py-1.5 rounded-sm hover:bg-stamp hover:text-paper transition-all flex items-center gap-1.5"
+                className="font-mono text-xs font-bold bg-stamp text-paper px-3.5 py-1.5 rounded-xs hover:opacity-90 transition-all flex items-center gap-1.5 shadow-sm"
               >
                 <span>Curriculum</span>
                 <span className="font-sans">→</span>
               </Link>
               <button
                 onClick={handleSignOut}
-                className="font-mono text-xs text-muted hover:text-stamp border border-rule/25 px-3 py-1.5 rounded-sm transition-colors"
+                className="font-mono text-xs text-muted hover:text-stamp border border-rule/25 px-3 py-1.5 rounded-xs hover:border-stamp/30 transition-colors"
               >
                 Sign out
               </button>
@@ -214,10 +222,10 @@ export function DashboardView({
           </div>
 
           {/* ── Portfolio overview: gauge + stats side by side ── */}
-          <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-4 mb-5 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-5 mb-6 items-center">
             {/* Gauge */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.85 }}
+              initial={{ opacity: 0, scale: 0.88 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.1, ease: [0.34, 1.56, 0.64, 1] }}
               className="flex justify-center md:justify-start"
@@ -226,16 +234,16 @@ export function DashboardView({
             </motion.div>
 
             {/* Stats grid */}
-            <div className="grid grid-cols-3 gap-px border border-rule/25 rounded-sm overflow-hidden">
+            <div className="grid grid-cols-3 gap-px border border-rule/30 rounded-xs overflow-hidden shadow-md">
               {[
                 {
                   label: "Cash balance",
-                  node: <InkNumber value={initialCash} className="text-2xl font-semibold text-ink" />,
+                  node: <InkNumber value={initialCash} className="text-2xl font-bold text-ink" />,
                   extra: null,
                 },
                 {
                   label: "Portfolio value",
-                  node: <InkNumber value={totalPortfolioValuation} className="text-2xl font-semibold text-ink" />,
+                  node: <InkNumber value={totalPortfolioValuation} className="text-2xl font-bold text-ink" />,
                   extra: null,
                 },
                 {
@@ -243,12 +251,12 @@ export function DashboardView({
                   node: (
                     <InkNumber
                       value={pnl}
-                      className={`text-2xl font-semibold ${pnl >= 0 ? "text-gain" : "text-loss"}`}
+                      className={`text-2xl font-bold ${pnl >= 0 ? "text-gain" : "text-loss"}`}
                     />
                   ),
                   extra: pnl !== 0 ? (
-                    <span className={`font-mono text-[10px] tabular-nums mt-0.5 ${
-                      pnl >= 0 ? "text-gain/80" : "text-loss/80"
+                    <span className={`font-mono text-[10px] tabular-nums font-semibold mt-0.5 block ${
+                      pnl >= 0 ? "text-gain" : "text-loss"
                     }`}>
                       {pnl >= 0 ? "+" : ""}{((pnl / 100000) * 100).toFixed(2)}%
                     </span>
@@ -257,13 +265,13 @@ export function DashboardView({
               ].map((item) => (
                 <div
                   key={item.label}
-                  className={`bg-paper px-4 py-3 transition-all duration-300 ${
+                  className={`bg-paper/90 px-4 py-3.5 transition-all duration-300 ${
                     item.label === "Total P&L" && pnl !== 0
-                      ? pnl >= 0 ? "gain-glow" : "loss-glow"
+                      ? pnl >= 0 ? "glow-border-gain bg-gain/5" : "glow-border-stamp bg-loss/5"
                       : ""
                   }`}
                 >
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-1">{item.label}</p>
+                  <p className="font-mono text-[9px] uppercase tracking-widest text-muted/80 font-medium mb-1">{item.label}</p>
                   {item.node}
                   {item.extra}
                 </div>
@@ -272,23 +280,23 @@ export function DashboardView({
           </div>
 
           {/* Passbook page tabs */}
-          <div className="flex items-end gap-0 -mb-px">
+          <div className="flex items-end gap-1 -mb-px">
             {TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={[
-                  "relative px-6 py-2.5 font-display text-sm font-medium border border-b-0 rounded-t-sm transition-colors",
+                  "relative px-6 py-3 font-display text-sm font-semibold border border-b-0 rounded-t-xs transition-all duration-200 select-none",
                   activeTab === tab.id
-                    ? "bg-paper border-rule/30 text-ink z-10"
-                    : "bg-rule/[0.04] border-transparent text-muted hover:text-ink",
+                    ? "bg-paper border-rule/35 text-ink z-10 shadow-sm"
+                    : "bg-rule/[0.06] border-transparent text-muted hover:text-ink hover:bg-rule/[0.1]",
                 ].join(" ")}
               >
                 {tab.label}
                 {activeTab === tab.id && (
                   <motion.div
                     layoutId="tab-indicator"
-                    className="absolute bottom-0 inset-x-0 h-px bg-paper"
+                    className="absolute bottom-0 inset-x-0 h-0.5 bg-stamp"
                   />
                 )}
               </button>

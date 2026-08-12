@@ -1,163 +1,183 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
-interface FlyingMoneyParticle {
-  id: number;
-  symbol: string;
-  x: number;
-  rotation: number;
-  speed: number;
-  size: number;
+interface MarketStat {
+  label: string;
+  value: string;
+  change: string;
+  up: boolean;
 }
 
+const MARKET_STATS: MarketStat[] = [
+  { label: "NIFTY 50",   value: "22,147.90",  change: "+0.6%",  up: true  },
+  { label: "SENSEX",     value: "73,212.40",  change: "+0.7%",  up: true  },
+  { label: "NSE A/D",   value: "1,241",      change: "↑ 963",  up: true  },
+];
+
 export function MoneyVaultWidget() {
-  const [particles, setParticles] = useState<FlyingMoneyParticle[]>([]);
   const [cashVal, setCashVal] = useState(100000);
   const [pulse, setPulse] = useState(false);
+  const [alloc] = useState([
+    { label: "Large Cap", pct: 52, color: "#2F6B4F" },
+    { label: "Mid Cap",   pct: 28, color: "#8C2F39" },
+    { label: "Cash",      pct: 20, color: "#5C7A63" },
+  ]);
 
-  // Periodic pulse effect on cash value
+  // Periodic small cash fluctuation to demonstrate live state
   useEffect(() => {
     const interval = setInterval(() => {
       const delta = (Math.random() > 0.4 ? 1 : -1) * Math.floor(Math.random() * 850 + 150);
       setCashVal((prev) => Math.max(80000, prev + delta));
       setPulse(true);
-      setTimeout(() => setPulse(false), 400);
+      setTimeout(() => setPulse(false), 450);
     }, 3200);
     return () => clearInterval(interval);
   }, []);
 
-  function makeItRain() {
-    const newParticles: FlyingMoneyParticle[] = Array.from({ length: 14 }).map((_, i) => ({
-      id: Date.now() + i,
-      symbol: ["₹500", "₹2000", "$100", "₹100", "💸", "🪙", "₹"][Math.floor(Math.random() * 7)],
-      x: Math.random() * 260 - 20,
-      rotation: Math.random() * 360,
-      speed: 2 + Math.random() * 2.5,
-      size: 12 + Math.floor(Math.random() * 12),
-    }));
-    setParticles((prev) => [...prev, ...newParticles]);
-  }
-
-  // Clean up particles after animation
-  useEffect(() => {
-    if (particles.length === 0) return;
-    const timer = setTimeout(() => {
-      setParticles((prev) => prev.slice(7));
-    }, 2500);
-    return () => clearTimeout(timer);
-  }, [particles]);
-
   return (
-    <div className="relative w-full max-w-[260px] border border-rule/35 bg-paper p-5 shadow-lg overflow-hidden group">
-      {/* Background dotgrid */}
-      <div className="absolute inset-0 dotgrid-bg opacity-30 pointer-events-none" />
+    <div className="relative w-full max-w-[270px] border border-rule/40 bg-paper/95 backdrop-blur-md shadow-xl rounded-sm overflow-hidden passbook-card">
+      {/* Background dot matrix */}
+      <div className="absolute inset-0 dotgrid-bg opacity-40 pointer-events-none" />
 
-      {/* Red passbook spine */}
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-stamp" />
+      {/* Red passbook binding spine */}
+      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-stamp via-stamp/90 to-stamp" />
 
-      {/* Raining Money Particle Container */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
-        <AnimatePresence>
-          {particles.map((p) => (
-            <motion.div
-              key={p.id}
-              initial={{ y: -30, x: p.x, opacity: 1, rotate: p.rotation }}
-              animate={{ y: 320, rotate: p.rotation + 180, opacity: 0 }}
-              transition={{ duration: p.speed, ease: "easeIn" }}
-              className="absolute font-mono font-bold text-stamp select-none"
-              style={{ fontSize: p.size }}
-            >
-              {p.symbol}
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {/* Card Header */}
-      <div className="flex items-center justify-between mb-4 border-b border-rule/20 pb-3">
+      {/* Header */}
+      <div className="ml-1 flex items-center justify-between px-5 pt-5 pb-3 border-b border-rule/20 bg-rule/[0.03]">
         <div>
-          <span className="font-mono text-[8px] uppercase tracking-widest text-muted block mb-0.5">
+          <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-muted block mb-0.5">
             § 02 — Virtual Money Vault
           </span>
-          <span className="font-display text-xs font-semibold text-ink">
+          <span className="font-display text-xs font-semibold text-ink flex items-center gap-1.5">
             ₹1,00,000 Capital
           </span>
         </div>
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gain opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-gain"></span>
-        </span>
+        <div className="flex items-center gap-1.5 bg-gain/10 border border-gain/30 px-2 py-0.5 rounded-full">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gain opacity-75" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-gain" />
+          </span>
+          <span className="font-mono text-[7px] uppercase font-bold tracking-wider text-gain">Live</span>
+        </div>
       </div>
 
-      {/* 3D Floating Money Bills Visual Stack */}
-      <div className="relative h-28 my-3 flex items-center justify-center">
-        {/* Floating background ₹2000 bill */}
+      {/* Floating 3D Currency Notes Stack */}
+      <div className="ml-1 relative h-32 my-1 flex items-center justify-center px-4 overflow-hidden">
+        {/* ₹2000 Note */}
         <motion.div
           animate={{ y: [0, -6, 0], rotate: [-6, -4, -6] }}
-          transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-          className="absolute w-40 h-20 bg-gradient-to-br from-stamp/20 via-stamp/10 to-paper border border-stamp/40 rounded-sm p-2 shadow-md flex flex-col justify-between"
-          style={{ transform: "rotate(-6deg) translate(-10px, -5px)" }}
+          transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut" }}
+          className="absolute w-44 h-22 bg-gradient-to-br from-stamp/25 via-stamp/15 to-paper border border-stamp/40 rounded-xs p-2.5 shadow-md flex flex-col justify-between"
+          style={{ transform: "rotate(-6deg) translate(-10px, -4px)" }}
         >
           <div className="flex justify-between items-center">
-            <span className="font-mono text-[9px] font-bold text-stamp">₹2000</span>
-            <span className="font-mono text-[7px] text-stamp/60 uppercase">RESERVE BANK OF SIMULATION</span>
+            <span className="font-mono text-[9px] font-bold text-stamp tracking-wider">₹2000</span>
+            <span className="font-mono text-[6px] text-stamp/70 uppercase tracking-widest">Reserve Bank of Simulation</span>
           </div>
-          <div className="text-right">
-            <span className="font-display text-xs font-bold text-stamp/80">₹2,000</span>
+          <div className="flex justify-between items-end">
+            <span className="font-mono text-[6.5px] text-stamp/50 uppercase tracking-widest">Educational Note</span>
+            <span className="font-display text-xs font-bold text-stamp/90">₹2,000.00</span>
           </div>
         </motion.div>
 
-        {/* Floating foreground ₹500 bill */}
+        {/* ₹500 Note */}
         <motion.div
           animate={{ y: [0, 6, 0], rotate: [5, 7, 5] }}
-          transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
-          className="absolute w-40 h-20 bg-gradient-to-br from-gain/20 via-gain/10 to-paper border border-gain/40 rounded-sm p-2 shadow-lg flex flex-col justify-between z-10"
+          transition={{ repeat: Infinity, duration: 3.8, ease: "easeInOut" }}
+          className="absolute w-44 h-22 bg-gradient-to-br from-gain/25 via-gain/15 to-paper border border-gain/40 rounded-xs p-2.5 shadow-lg flex flex-col justify-between z-10"
           style={{ transform: "rotate(5deg) translate(10px, 8px)" }}
         >
           <div className="flex justify-between items-center">
-            <span className="font-mono text-[9px] font-bold text-gain">₹500</span>
-            <span className="font-mono text-[7px] text-gain/60 uppercase">SIMULATED CURRENCY</span>
+            <span className="font-mono text-[9px] font-bold text-gain tracking-wider">₹500</span>
+            <span className="font-mono text-[6px] text-gain/70 uppercase tracking-widest">Simulated Currency</span>
           </div>
-          <div className="text-right">
-            <span className="font-display text-xs font-bold text-gain/90">₹500.00</span>
+          <div className="flex justify-between items-end">
+            <span className="font-mono text-[6.5px] text-gain/50 uppercase tracking-widest">Legal Tender: Zero</span>
+            <span className="font-display text-xs font-bold text-gain/95">₹500.00</span>
           </div>
         </motion.div>
 
-        {/* 3D Gold Coin with metallic shine */}
+        {/* Metallic Gold Rupee Coin */}
         <motion.div
           animate={{ rotateY: [0, 360] }}
           transition={{ repeat: Infinity, duration: 6, ease: "linear" }}
-          className="absolute h-10 w-10 rounded-full border-2 border-yellow-600 bg-gradient-to-tr from-yellow-600 via-yellow-400 to-yellow-200 shadow-md flex items-center justify-center z-20"
-          style={{ transformStyle: "preserve-3d" }}
+          className="absolute h-11 w-11 rounded-full border-2 border-yellow-600/80 bg-gradient-to-tr from-yellow-700 via-yellow-400 to-yellow-100 shadow-xl flex items-center justify-center z-20"
+          style={{ transformStyle: "preserve-3d", boxShadow: "0 4px 14px rgba(212,175,55,0.4)" }}
         >
-          <span className="font-mono font-bold text-yellow-950 text-sm">₹</span>
+          <span className="font-mono font-bold text-yellow-950 text-base drop-shadow-xs">₹</span>
         </motion.div>
       </div>
 
-      {/* Live Value Display */}
-      <div className="bg-ink text-paper p-3 rounded-sm text-center mb-3">
-        <span className="font-mono text-[8px] uppercase tracking-widest text-paper/40 block mb-0.5">
+      {/* Cash Balance */}
+      <div className="ml-1 bg-ink text-paper px-5 py-3.5 text-center relative">
+        <span className="font-mono text-[8px] uppercase tracking-[0.22em] text-paper/45 block mb-1">
           Simulated Cash Balance
         </span>
         <div
-          className={`font-mono text-lg font-bold tabular-nums transition-colors ${
-            pulse ? "text-gain" : "text-paper"
+          className={`font-mono text-xl font-bold tabular-nums transition-colors duration-300 ${
+            pulse ? "text-gain font-extrabold scale-105" : "text-paper"
           }`}
         >
           ₹{cashVal.toLocaleString("en-IN")}.00
         </div>
       </div>
 
-      {/* Interactive Button */}
-      <button
-        onClick={makeItRain}
-        className="w-full font-mono text-[10px] uppercase tracking-widest bg-stamp/15 text-stamp border border-stamp/30 py-2 hover:bg-stamp hover:text-paper active:scale-[0.97] transition-all flex items-center justify-center gap-1.5"
-      >
-        <span>💸 Make It Rain</span>
-        <span className="font-sans text-xs">✨</span>
-      </button>
+      {/* Allocation breakdown */}
+      <div className="ml-1 px-5 py-3.5 border-t border-rule/15 bg-rule/[0.02]">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-mono text-[7.5px] uppercase tracking-widest text-muted">
+            Portfolio Allocation
+          </span>
+          <span className="font-mono text-[7.5px] text-stamp font-semibold uppercase">100% Simulated</span>
+        </div>
+        <div className="space-y-2">
+          {alloc.map((row) => (
+            <div key={row.label} className="flex items-center gap-2">
+              <span className="font-mono text-[8.5px] text-ink/80 w-16 shrink-0 font-medium">{row.label}</span>
+              <div className="flex-1 h-2 bg-rule/15 rounded-full overflow-hidden p-0.5">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${row.pct}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  className="h-full rounded-full"
+                  style={{ background: row.color, opacity: 0.85 }}
+                />
+              </div>
+              <span className="font-mono text-[8.5px] tabular-nums text-ink font-semibold w-7 text-right">{row.pct}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Market Indices strip */}
+      <div className="ml-1 border-t border-rule/15 px-5 py-3 bg-paper">
+        <span className="font-mono text-[7.5px] uppercase tracking-widest text-muted block mb-2">
+          Live Market Benchmark
+        </span>
+        <div className="space-y-1.5">
+          {MARKET_STATS.map((s) => (
+            <div key={s.label} className="flex items-center justify-between">
+              <span className="font-mono text-[8.5px] text-muted font-medium">{s.label}</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[8.5px] tabular-nums text-ink font-semibold">{s.value}</span>
+                <span
+                  className={`font-mono text-[8.5px] tabular-nums font-bold px-1.5 py-0.2 rounded-xs ${
+                    s.up ? "bg-gain/10 text-gain" : "bg-loss/10 text-loss"
+                  }`}
+                >
+                  {s.change}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="font-mono text-[7px] text-muted/50 mt-2.5 leading-tight text-center">
+          Educational simulation · Delayed prices ~15 min
+        </p>
+      </div>
     </div>
   );
 }
+

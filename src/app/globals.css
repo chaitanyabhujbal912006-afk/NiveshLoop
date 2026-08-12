@@ -331,20 +331,97 @@ body::before {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PASSBOOK GRID OVERLAY — dot-matrix ledger texture
+   LUXURY FINTECH & PASSBOOK DESIGN UTILITIES
    ═══════════════════════════════════════════════════════════════════════════ */
-.dotgrid-bg {
-  background-image: radial-gradient(circle, rgba(92,122,99,0.18) 1px, transparent 1px);
-  background-size: 24px 24px;
+
+/* ── Glassmorphism Card ─ */
+.glass-panel {
+  background: rgba(233, 239, 231, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(92, 122, 99, 0.22);
+  box-shadow: 0 8px 32px 0 rgba(30, 42, 68, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   INK BLEED BORDER ANIMATION on card focus
-   ═══════════════════════════════════════════════════════════════════════════ */
-@keyframes border-draw {
-  from { clip-path: inset(0 100% 0 0); }
-  to   { clip-path: inset(0 0% 0 0); }
+.glass-panel-dark {
+  background: rgba(30, 42, 68, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
 }
-.border-draw {
-  animation: border-draw 0.45s cubic-bezier(0.25,0,0.2,1) both;
+
+/* ── Passbook Card Elevation ─ */
+.passbook-card {
+  position: relative;
+  background-color: #E9EFE7;
+  border: 1px solid rgba(92, 122, 99, 0.3);
+  box-shadow: 
+    0 1px 3px rgba(30, 42, 68, 0.05),
+    0 10px 30px -5px rgba(30, 42, 68, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+.passbook-card:hover {
+  border-color: rgba(140, 47, 57, 0.4);
+  box-shadow: 
+    0 4px 12px rgba(30, 42, 68, 0.08),
+    0 18px 45px -8px rgba(30, 42, 68, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+}
+
+/* ── Glow Borders & Badges ─ */
+.glow-border-stamp {
+  box-shadow: 0 0 0 1px rgba(140, 47, 57, 0.35), 0 0 18px rgba(140, 47, 57, 0.15);
+}
+
+.glow-border-gain {
+  box-shadow: 0 0 0 1px rgba(47, 107, 79, 0.35), 0 0 18px rgba(47, 107, 79, 0.15);
+}
+
+.glow-badge-stamp {
+  background: rgba(140, 47, 57, 0.1);
+  color: #8C2F39;
+  border: 1px solid rgba(140, 47, 57, 0.3);
+  box-shadow: 0 0 10px rgba(140, 47, 57, 0.1);
+}
+
+.glow-badge-gain {
+  background: rgba(47, 107, 79, 0.1);
+  color: #2F6B4F;
+  border: 1px solid rgba(47, 107, 79, 0.3);
+  box-shadow: 0 0 10px rgba(47, 107, 79, 0.1);
+}
+
+/* ── Gold Metallic Shine ─ */
+.gold-shine {
+  background: linear-gradient(135deg, #d4af37 0%, #fff3a8 50%, #aa7c11 100%);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* ── Mesh Backgrounds ─ */
+.mesh-hero {
+  background: 
+    radial-gradient(ellipse 90% 70% at 75% 25%, rgba(140, 47, 57, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 20% 75%, rgba(47, 107, 79, 0.07) 0%, transparent 60%),
+    radial-gradient(circle at 50% 50%, rgba(92, 122, 99, 0.04) 0%, transparent 80%);
+}
+
+.mesh-dark {
+  background: 
+    radial-gradient(ellipse 80% 60% at 20% 40%, rgba(140, 47, 57, 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 70% 50% at 80% 60%, rgba(47, 107, 79, 0.15) 0%, transparent 70%),
+    linear-gradient(180deg, #1E2A44 0%, #151d30 100%);
+}
+
+/* ── Smooth Hover Lift ─ */
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hover-lift:hover {
+  transform: translateY(-3px);
+}
+

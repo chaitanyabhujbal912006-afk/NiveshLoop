@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { FeatureSandbox } from "@/components/FeatureSandbox";
 import { MoneyVaultWidget } from "@/components/MoneyVaultWidget";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { TRANSLATIONS, getStoredLanguage, type Language } from "@/lib/i18n";
 
 /* ─── Ticker data ────────────────────────────────────────────────────────── */
 const TICKER_ITEMS = [
@@ -30,6 +31,76 @@ const DEMO_ROWS = [
   { date: "20 Aug", code: "L-09", text: "Lesson — Diversification",            amount: null,      sign: null, type: "lesson"  },
   { date: "21 Aug", code: "T-11", text: "Bought HDFC.NS + WIPRO.NS",          amount: "₹31,900", sign: "−",  type: "trade"   },
 ];
+
+/* ─── Candlestick visual — hero accent ──────────────────────────────────── */
+function CandlestickVisual() {
+  // A static but tasteful candlestick chart illustration for the hero
+  const candles = [
+    { open: 62, close: 78, low: 55, high: 84, up: true },
+    { open: 78, close: 70, low: 65, high: 82, up: false },
+    { open: 70, close: 85, low: 66, high: 90, up: true },
+    { open: 85, close: 80, low: 74, high: 88, up: false },
+    { open: 80, close: 92, low: 76, high: 96, up: true },
+    { open: 92, close: 88, low: 82, high: 95, up: false },
+    { open: 88, close: 100, low: 84, high: 104, up: true },
+    { open: 100, close: 94, low: 88, high: 106, up: false },
+    { open: 94, close: 110, low: 90, high: 115, up: true },
+  ];
+  const maxH = 120;
+  const W = 180;
+  const candleW = 14;
+  const gap = 6;
+
+  return (
+    <svg
+      viewBox={`0 0 ${W} ${maxH + 20}`}
+      className="w-full h-full"
+      aria-hidden
+      style={{ overflow: "visible" }}
+    >
+      {candles.map((c, i) => {
+        const x = i * (candleW + gap) + 4;
+        const scale = maxH / 120;
+        const bodyTop = Math.min(c.open, c.close) * scale;
+        const bodyH = Math.abs(c.close - c.open) * scale;
+        const wickTop = c.low * scale;
+        const wickBot = c.high * scale;
+        const color = c.up ? "#2F6B4F" : "#8C2F39";
+        const yOff = maxH;
+        return (
+          <g key={i}>
+            {/* wick */}
+            <line
+              x1={x + candleW / 2} y1={yOff - wickBot}
+              x2={x + candleW / 2} y2={yOff - wickTop}
+              stroke={color} strokeWidth={1.5} opacity={0.6}
+            />
+            {/* body */}
+            <rect
+              x={x} y={yOff - bodyTop - bodyH}
+              width={candleW} height={Math.max(bodyH, 2)}
+              fill={color} opacity={c.up ? 0.75 : 0.6}
+              rx={1}
+            />
+          </g>
+        );
+      })}
+      {/* moving average line */}
+      <polyline
+        points={candles.map((c, i) => {
+          const x = i * (candleW + gap) + 4 + candleW / 2;
+          const y = maxH - ((c.open + c.close) / 2) * (maxH / 120);
+          return `${x},${y}`;
+        }).join(" ")}
+        fill="none"
+        stroke="#5C7A63"
+        strokeWidth={1.5}
+        strokeDasharray="4 3"
+        opacity={0.5}
+      />
+    </svg>
+  );
+}
 
 /* ─── Canvas price chart background ─────────────────────────────────────── */
 function PriceChartCanvas() {
@@ -304,11 +375,24 @@ function LiveDot({ color = "#2F6B4F" }: { color?: string }) {
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false);
+  const [lang, setLang] = useState<Language>("en");
   const { scrollY } = useScroll();
   const navBg = useTransform(scrollY, [0, 80], ["rgba(233,239,231,0)", "rgba(233,239,231,0.96)"]);
   const navBorder = useTransform(scrollY, [0, 80], ["rgba(92,122,99,0)", "rgba(92,122,99,0.2)"]);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    setLang(getStoredLanguage());
+
+    function handleLangChange(e: Event) {
+      const newLang = (e as CustomEvent<Language>).detail;
+      setLang(newLang);
+    }
+    window.addEventListener("niveshloop_lang_changed", handleLangChange);
+    return () => window.removeEventListener("niveshloop_lang_changed", handleLangChange);
+  }, []);
+
+  const t = TRANSLATIONS[lang];
 
   return (
     <div className="min-h-screen bg-paper overflow-x-hidden">
@@ -326,11 +410,11 @@ export default function HomePage() {
             <LanguageToggle />
             <Link href="/login"
               className="font-mono text-xs text-muted hover:text-ink transition-colors uppercase tracking-widest px-3 py-2">
-              Sign in
+              {t.signIn}
             </Link>
             <Link href="/signup"
               className="font-mono text-xs font-medium bg-stamp text-paper px-5 py-2.5 hover:opacity-90 transition-opacity uppercase tracking-widest inline-flex items-center gap-2">
-              Open passbook <span aria-hidden>→</span>
+              {t.openPassbook}
             </Link>
           </div>
         </div>
@@ -338,7 +422,8 @@ export default function HomePage() {
 
       {/* ══ HERO — full screen, canvas BG, 3D passbook ════════════════ */}
       <section className="relative min-h-screen flex flex-col justify-center pt-14 overflow-hidden">
-        {/* Animated price-chart canvas background */}
+        {/* Rich layered background */}
+        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 120% 90% at 65% 40%, rgba(140,47,57,0.07) 0%, transparent 60%), radial-gradient(ellipse 80% 60% at 20% 70%, rgba(47,107,79,0.06) 0%, transparent 60%)" }} />
         <PriceChartCanvas />
 
         {/* Ledger lines over canvas */}
@@ -364,7 +449,7 @@ export default function HomePage() {
             >
               <LiveDot />
               <span className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted">
-                For beginners · Indian markets · Free
+                {lang === "hi" ? "शुरुआती लोगों के लिए · भारतीय बाज़ार · मुफ़्त" : "For beginners · Indian markets · Free"}
               </span>
             </motion.div>
 
@@ -372,12 +457,22 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 28 }}
               animate={mounted ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.75, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="font-display display-giant text-ink mb-8 selection:bg-stamp/20"
+              className={`font-display text-ink mb-8 selection:bg-stamp/20 ${lang === "hi" ? "display-xl" : "display-giant"}`}
               style={{ textShadow: "0 2px 40px rgba(30,42,68,0.06)" }}
             >
-              Learn.<br />
-              <span className="italic">Trade.</span><br />
-              <span className="text-stamp ink-underline">Reflect.</span>
+              {lang === "hi" ? (
+                <>
+                  सीखें.<br />
+                  <span className="italic">ट्रेड करें.</span><br />
+                  <span className="text-stamp ink-underline">समझें.</span>
+                </>
+              ) : (
+                <>
+                  Learn.<br />
+                  <span className="italic">Trade.</span><br />
+                  <span className="text-stamp ink-underline">Reflect.</span>
+                </>
+              )}
             </motion.h1>
 
             <motion.div
@@ -387,10 +482,21 @@ export default function HomePage() {
               className="border-l-[3px] border-stamp/50 pl-5 mb-12"
             >
               <p className="font-body text-lg text-ink/75 leading-relaxed max-w-[440px]">
-                The only investing app that connects every lesson directly to a{" "}
-                <strong className="font-semibold text-ink">simulated trade</strong> —
-                then hands the passbook back and shows you the pattern
-                in how you're <strong className="font-semibold text-ink">actually</strong> investing.
+                {lang === "hi" ? (
+                  <>
+                    एकमात्र ऐसा ऐप जो हर पाठ को सीधे एक{" "}
+                    <strong className="font-semibold text-ink">सिम्युलेटेड ट्रेड</strong> से
+                    जोड़ता है — फिर पासबुक वापस देकर दिखाता है कि आप{" "}
+                    <strong className="font-semibold text-ink">वास्तव में</strong> कैसे निवेश कर रहे हैं।
+                  </>
+                ) : (
+                  <>
+                    The only investing app that connects every lesson directly to a{" "}
+                    <strong className="font-semibold text-ink">simulated trade</strong> —
+                    then hands the passbook back and shows you the pattern
+                    in how you&apos;re <strong className="font-semibold text-ink">actually</strong> investing.
+                  </>
+                )}
               </p>
             </motion.div>
 
@@ -404,17 +510,17 @@ export default function HomePage() {
                 className="inline-flex items-center gap-4 bg-stamp text-paper font-body font-semibold text-base px-10 py-5 hover:opacity-90 active:scale-[0.99] transition-all duration-100"
                 style={{ boxShadow: "0 8px 32px rgba(140,47,57,0.28), 0 2px 8px rgba(140,47,57,0.15)" }}
               >
-                Open your passbook
-                <span className="font-mono text-sm opacity-70 border-l border-paper/30 pl-4">₹1,00,000 free</span>
+                {lang === "hi" ? "अपनी पासबुक खोलें" : "Open your passbook"}
+                <span className="font-mono text-sm opacity-70 border-l border-paper/30 pl-4">{t.virtualMoneyDesc.split(".")[0]}</span>
               </Link>
 
               {/* Stat pills */}
               <div className="mt-10 flex flex-wrap gap-6">
                 {[
-                  { v: "₹0", l: "real money needed" },
-                  { v: "15", l: "lessons" },
-                  { v: "Free", l: "forever, no ads" },
-                  { v: "100%", l: "simulated" },
+                  { v: "₹0", l: lang === "hi" ? "वास्तविक पैसा नहीं" : "real money needed" },
+                  { v: "15",   l: lang === "hi" ? "पाठ" : "lessons" },
+                  { v: lang === "hi" ? "मुफ़्त" : "Free", l: lang === "hi" ? "हमेशा, कोई विज्ञापन नहीं" : "forever, no ads" },
+                  { v: "100%", l: lang === "hi" ? "सिम्युलेटेड" : "simulated" },
                 ].map(({ v, l }) => (
                   <div key={l} className="flex flex-col">
                     <span className="font-mono tabular-nums text-3xl font-semibold text-ink leading-none">{v}</span>
@@ -425,7 +531,7 @@ export default function HomePage() {
             </motion.div>
           </div>
 
-          {/* Right: 3D Passbook */}
+          {/* Right: 3D Passbook + Candlestick accent */}
           <motion.div
             initial={{ opacity: 0, y: 40, rotate: 3 }}
             animate={mounted ? { opacity: 1, y: 0, rotate: 0 } : {}}
@@ -433,6 +539,23 @@ export default function HomePage() {
             className="lg:self-center w-full"
           >
             <PassbookWidget />
+
+            {/* Candlestick accent below passbook on desktop */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={mounted ? { opacity: 0.6, y: 0 } : {}}
+              transition={{ duration: 0.7, delay: 0.9 }}
+              className="hidden lg:block mt-6 px-2"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <span className="font-mono text-[8px] uppercase tracking-widest text-muted/50">Simulated price chart</span>
+                <span className="flex-1 h-px bg-rule/20" />
+              </div>
+              <div className="h-20">
+                <CandlestickVisual />
+              </div>
+              <p className="font-mono text-[7px] text-muted/30 mt-1">Delayed prices · Educational only</p>
+            </motion.div>
           </motion.div>
         </div>
 
@@ -473,7 +596,7 @@ export default function HomePage() {
       </div>
 
       {/* ══ SECTION 2 — THE PROBLEM ══════════════════════════════════════ */}
-      <section className="max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 py-32">
+      <section className="max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-12 lg:gap-20 items-start">
           {/* Left Column: Money Vault Widget */}
           <div className="hidden lg:block sticky top-24">
@@ -530,63 +653,104 @@ export default function HomePage() {
         <div className="torn-top h-8 bg-paper absolute top-0 inset-x-0 z-10" />
         <div className="torn-bottom h-8 bg-paper absolute bottom-0 inset-x-0 z-10" />
 
+        {/* Rich gradient background */}
+        <div className="absolute inset-0" style={{
+          background: "radial-gradient(ellipse 70% 60% at 15% 50%, rgba(140,47,57,0.12) 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 85% 40%, rgba(47,107,79,0.10) 0%, transparent 60%)"
+        }} />
+
         {/* Ledger lines */}
         <div className="absolute inset-0"
           style={{ backgroundImage: "repeating-linear-gradient(transparent,transparent 47px,rgba(92,122,99,0.07) 47px,rgba(92,122,99,0.07) 48px)" }}
         />
 
-        {/* Dot grid */}
-        <div className="absolute inset-0 opacity-[0.04]"
-          style={{ backgroundImage: "radial-gradient(circle, rgba(92,122,99,1) 1px, transparent 1px)", backgroundSize: "28px 28px" }}
-        />
-
-        <div className="relative z-0 max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 py-40">
+        <div className="relative z-0 max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 py-24">
           <motion.p
             initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-            className="font-mono text-[11px] uppercase tracking-[0.25em] text-paper/25 mb-6"
+            className="font-mono text-[11px] uppercase tracking-[0.25em] text-paper/25 mb-4"
           >
             § 03 — One loop, always
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="font-display display-xl text-paper mb-24"
+            className="font-display display-xl text-paper mb-16"
           >
             The loop that<br />
             <span className="text-stamp">closes the gap.</span>
           </motion.h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 relative">
-            {/* Connector */}
-            <div className="hidden md:block absolute top-10 left-[17%] right-[17%] h-px"
-              style={{ background: "linear-gradient(to right, transparent, rgba(92,122,99,0.3), transparent)" }}
-            />
-
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
             {[
-              { n: "01", icon: "📖", head: "Read the lesson", body: "4 minutes. No video, no quiz. One focused concept, explained plainly in language that doesn't assume you know what a P/E ratio is.", accent: "#5C7A63" },
-              { n: "02", icon: "↗",  head: "Execute a trade", body: "The lesson ends with a direct trade in your ₹1,00,000 simulated portfolio. Real delayed prices. The order form changes as you learn.", accent: "#8C2F39" },
-              { n: "03", icon: "🪞", head: "See your pattern", body: "After 8–10 trades, we hand the passbook back: plain language, your own behavior described — never a recommendation, never advice.", accent: "#2F6B4F" },
+              {
+                n: "01", head: "Read the lesson",
+                body: "4 minutes. One focused concept, explained plainly — no jargon, no assumed knowledge.",
+                accent: "#5C7A63",
+                icon: (
+                  <svg viewBox="0 0 48 48" className="w-10 h-10" fill="none" aria-hidden>
+                    <rect x="6" y="8" width="24" height="32" rx="2" stroke="#5C7A63" strokeWidth="1.8" fill="rgba(92,122,99,0.08)"/>
+                    <rect x="18" y="8" width="24" height="32" rx="2" stroke="#5C7A63" strokeWidth="1.8" fill="rgba(92,122,99,0.12)"/>
+                    <line x1="22" y1="18" x2="36" y2="18" stroke="#5C7A63" strokeWidth="1.4" strokeLinecap="round"/>
+                    <line x1="22" y1="23" x2="36" y2="23" stroke="#5C7A63" strokeWidth="1.4" strokeLinecap="round"/>
+                    <line x1="22" y1="28" x2="30" y2="28" stroke="#5C7A63" strokeWidth="1.4" strokeLinecap="round"/>
+                  </svg>
+                )
+              },
+              {
+                n: "02", head: "Execute a trade",
+                body: "The lesson ends with a live order form connected to your ₹1,00,000 simulated portfolio. Real delayed prices.",
+                accent: "#8C2F39",
+                icon: (
+                  <svg viewBox="0 0 48 48" className="w-10 h-10" fill="none" aria-hidden>
+                    <polyline points="6,38 16,26 24,30 38,10" stroke="#8C2F39" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="38" cy="10" r="3" fill="#8C2F39" opacity="0.8"/>
+                    <rect x="6" y="36" width="8" height="6" rx="1" fill="rgba(140,47,57,0.2)" stroke="#8C2F39" strokeWidth="1.2"/>
+                    <rect x="20" y="28" width="8" height="14" rx="1" fill="rgba(140,47,57,0.15)" stroke="#8C2F39" strokeWidth="1.2"/>
+                    <rect x="34" y="20" width="8" height="22" rx="1" fill="rgba(140,47,57,0.25)" stroke="#8C2F39" strokeWidth="1.2"/>
+                  </svg>
+                )
+              },
+              {
+                n: "03", head: "See your pattern",
+                body: "After 8–10 trades, the passbook opens: your behavior in plain words. Never a recommendation. Just a mirror.",
+                accent: "#2F6B4F",
+                icon: (
+                  <svg viewBox="0 0 48 48" className="w-10 h-10" fill="none" aria-hidden>
+                    <ellipse cx="24" cy="24" rx="14" ry="18" stroke="#2F6B4F" strokeWidth="1.8" fill="rgba(47,107,79,0.08)"/>
+                    <ellipse cx="24" cy="24" rx="7" ry="9" stroke="#2F6B4F" strokeWidth="1.4" fill="rgba(47,107,79,0.12)"/>
+                    <circle cx="24" cy="24" r="3" fill="#2F6B4F" opacity="0.6"/>
+                    <line x1="10" y1="8" x2="38" y2="40" stroke="#2F6B4F" strokeWidth="1" opacity="0.25" strokeDasharray="3 3"/>
+                  </svg>
+                )
+              },
             ].map((step, i) => (
               <motion.div
                 key={step.n}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.55, delay: i * 0.18 }}
-                className="relative px-10 py-12 border-r border-rule/10 last:border-0 group"
+                transition={{ duration: 0.55, delay: i * 0.15 }}
+                className="relative p-8 border group cursor-default"
+                style={{
+                  background: `linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)`,
+                  borderColor: `${step.accent}25`,
+                  boxShadow: `0 0 0 1px ${step.accent}12, inset 0 1px 0 rgba(255,255,255,0.04)`,
+                }}
               >
-                <div className="mb-8 flex items-center gap-5">
-                  <div className="h-10 w-10 rounded-full border border-white/10 flex items-center justify-center">
-                    <span className="font-mono text-xs text-paper/40">{step.n}</span>
-                  </div>
+                {/* Step number */}
+                <div className="flex items-center justify-between mb-6">
+                  <span className="font-mono text-[9px] uppercase tracking-widest" style={{ color: `${step.accent}80` }}>{step.n}</span>
+                  <div className="h-px flex-1 mx-4" style={{ background: `linear-gradient(to right, ${step.accent}30, transparent)` }} />
                 </div>
-                <div className="text-4xl mb-6" aria-hidden>{step.icon}</div>
-                <p className="font-display text-2xl font-semibold mb-4" style={{ color: step.accent }}>{step.head}</p>
+
+                {/* SVG icon */}
+                <div className="mb-5">{step.icon}</div>
+
+                <p className="font-display text-xl font-semibold mb-3" style={{ color: step.accent }}>{step.head}</p>
                 <p className="font-body text-sm text-paper/50 leading-relaxed">{step.body}</p>
 
-                {/* Hover reveal line */}
-                <div className="absolute bottom-0 left-10 right-10 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"
-                  style={{ background: step.accent, opacity: 0.5 }}
+                {/* Bottom accent bar */}
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-b"
+                  style={{ background: `linear-gradient(to right, ${step.accent}, transparent)` }}
                 />
               </motion.div>
             ))}
@@ -594,19 +758,19 @@ export default function HomePage() {
 
           <motion.div
             initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-            transition={{ delay: 0.7 }}
-            className="mt-16 flex items-center justify-center gap-6"
+            transition={{ delay: 0.6 }}
+            className="mt-10 flex items-center justify-center gap-6"
           >
-            <div className="h-px w-32 bg-gradient-to-r from-transparent to-rule/20" />
-            <span className="font-mono text-xs text-paper/20 uppercase tracking-widest">↺ then back to 01</span>
-            <div className="h-px w-32 bg-gradient-to-l from-transparent to-rule/20" />
+            <div className="h-px w-24 bg-gradient-to-r from-transparent to-rule/20" />
+            <span className="font-mono text-[10px] text-paper/20 uppercase tracking-widest">↺ then back to 01</span>
+            <div className="h-px w-24 bg-gradient-to-l from-transparent to-rule/20" />
           </motion.div>
         </div>
       </section>
 
-      {/* ══ SECTION 4 — FEATURES LEDGER TABLE ═════════════════════════ */}
-      <section className="max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 py-32">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-14">
+      {/* ══ SECTION 4 — FEATURES CARDS ═════════════════════════════════ */}
+      <section className="max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 py-20">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-widest text-muted mb-3">§ 04 — What makes it different</p>
             <motion.h2
@@ -617,39 +781,97 @@ export default function HomePage() {
               Designed against<br /><span className="italic text-muted/60">bad investing habits.</span>
             </motion.h2>
           </div>
-          <p className="font-mono text-[10px] text-muted uppercase tracking-widest max-w-xs text-right hidden sm:block">
-            Every feature is a deliberate product decision — not a coincidence.
-          </p>
         </div>
 
-        <div className="border border-rule/30 overflow-hidden"
-          style={{ boxShadow: "0 4px 40px rgba(30,42,68,0.06)" }}
-        >
-          <div className="grid grid-cols-[3rem_1fr_1fr] border-b-2 border-rule/25 bg-rule/[0.045] px-8 py-4 gap-8">
-            <span />
-            <span className="font-mono text-[9px] uppercase tracking-widest text-muted">Feature</span>
-            <span className="font-mono text-[9px] uppercase tracking-widest text-muted">Why it matters</span>
-          </div>
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            { icon: "🔗", feat: "Lesson → Trade, directly",   why: "The form changes when you learn. Complete stop-loss lesson? Stop-loss field appears. The UI proves you learned." },
-            { icon: "⏸", feat: "10-second cooldown nudge",    why: "Try to sell during a sharp drop and a pause screen appears. Not a block — a breath. The button still works." },
-            { icon: "🪞", feat: "Behavioral reflection",       why: "After 8–10 trades: 'You exited 3 positions within 2 days of buying.' No advice, just your own pattern held up." },
-            { icon: "🔒", feat: "Progressive unlocks",         why: "Market orders only at first. Limit orders, stop-losses, sectoral analysis unlock as you genuinely complete lessons." },
-            { icon: "📭", feat: "Zero real money. Ever.",      why: "No brokerage link, no UPI, no 'upgrade to trade real'. The fake money is the point — skin without risk." },
-            { icon: "🚫", feat: "No streak mechanics",         why: "No 'come back tomorrow or lose your streak.' No returns leaderboard. Habits are rewarded, not daily engagement." },
+            {
+              feat: "Lesson → Trade, directly",
+              why: "The form changes as you learn. Complete the stop-loss lesson — stop-loss field appears. The UI proves you learned.",
+              color: "#5C7A63",
+              icon: (
+                <svg viewBox="0 0 32 32" className="w-7 h-7" fill="none" aria-hidden>
+                  <path d="M4 16h8l4-8 4 16 4-8h4" stroke="#5C7A63" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )
+            },
+            {
+              feat: "10-second cooldown nudge",
+              why: "Panic-selling? A breath screen appears. Not a block — just a pause. The button still works.",
+              color: "#8C2F39",
+              icon: (
+                <svg viewBox="0 0 32 32" className="w-7 h-7" fill="none" aria-hidden>
+                  <circle cx="16" cy="16" r="11" stroke="#8C2F39" strokeWidth="2"/>
+                  <path d="M16 10v6l4 2" stroke="#8C2F39" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              )
+            },
+            {
+              feat: "Behavioral reflection",
+              why: "After 8–10 trades: plain language describing your own patterns. No advice, just a mirror.",
+              color: "#2F6B4F",
+              icon: (
+                <svg viewBox="0 0 32 32" className="w-7 h-7" fill="none" aria-hidden>
+                  <path d="M8 4h10a6 6 0 010 12H8V4z" stroke="#2F6B4F" strokeWidth="2" strokeLinejoin="round"/>
+                  <path d="M8 16h12a6 6 0 010 12H8V16z" stroke="#2F6B4F" strokeWidth="2" strokeLinejoin="round" opacity="0.5"/>
+                </svg>
+              )
+            },
+            {
+              feat: "Progressive unlocks",
+              why: "Market orders only at first. Limit orders, stop-losses, sector analysis unlock as lessons are completed.",
+              color: "#7A5C2F",
+              icon: (
+                <svg viewBox="0 0 32 32" className="w-7 h-7" fill="none" aria-hidden>
+                  <rect x="8" y="14" width="16" height="12" rx="2" stroke="#7A5C2F" strokeWidth="2"/>
+                  <path d="M11 14v-4a5 5 0 0110 0v4" stroke="#7A5C2F" strokeWidth="2" strokeLinecap="round"/>
+                  <circle cx="16" cy="20" r="1.5" fill="#7A5C2F"/>
+                </svg>
+              )
+            },
+            {
+              feat: "Zero real money. Ever.",
+              why: "No brokerage link, no UPI, no 'upgrade to trade real'. The virtual ₹1,00,000 is the entire point.",
+              color: "#4F2F7A",
+              icon: (
+                <svg viewBox="0 0 32 32" className="w-7 h-7" fill="none" aria-hidden>
+                  <circle cx="16" cy="16" r="11" stroke="#4F2F7A" strokeWidth="2"/>
+                  <path d="M12 12l8 8M20 12l-8 8" stroke="#4F2F7A" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              )
+            },
+            {
+              feat: "No streak mechanics",
+              why: "No 'come back or lose your streak'. Habits are celebrated, not daily engagement or profitable returns.",
+              color: "#2F5A7A",
+              icon: (
+                <svg viewBox="0 0 32 32" className="w-7 h-7" fill="none" aria-hidden>
+                  <path d="M16 6l2.5 5 5.5 0.8-4 3.9 0.9 5.5L16 18.5l-4.9 2.7 0.9-5.5-4-3.9 5.5-0.8z" stroke="#2F5A7A" strokeWidth="1.8" strokeLinejoin="round"/>
+                  <line x1="6" y1="26" x2="26" y2="6" stroke="#2F5A7A" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              )
+            },
           ].map((row, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.35, delay: i * 0.06 }}
-              className="grid grid-cols-[3rem_1fr_1fr] px-8 py-6 border-b border-rule/12 last:border-0 gap-8 hover:bg-rule/[0.025] transition-colors group cursor-default"
+              transition={{ duration: 0.4, delay: i * 0.07 }}
+              className="group relative p-6 border border-rule/20 bg-paper hover:border-rule/40 transition-all duration-200 cursor-default"
+              style={{ boxShadow: "0 2px 20px rgba(30,42,68,0.04)" }}
             >
-              <span className="text-xl mt-0.5 group-hover:scale-110 transition-transform inline-block" aria-hidden>{row.icon}</span>
-              <p className="font-display text-lg font-semibold text-ink group-hover:text-stamp transition-colors">{row.feat}</p>
-              <p className="font-body text-sm text-ink/60 leading-relaxed">{row.why}</p>
+              {/* Spine accent */}
+              <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l" style={{ background: row.color, opacity: 0.6 }} />
+
+              <div className="mb-4 flex items-center gap-3">
+                <div className="p-2 rounded" style={{ background: `${row.color}10` }}>
+                  {row.icon}
+                </div>
+              </div>
+
+              <p className="font-display text-base font-semibold text-ink mb-2 group-hover:text-stamp transition-colors">{row.feat}</p>
+              <p className="font-body text-sm text-ink/55 leading-relaxed">{row.why}</p>
             </motion.div>
           ))}
         </div>
@@ -791,24 +1013,30 @@ export default function HomePage() {
                 </svg>
               </div>
 
-              <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-7">Ready?</p>
+              <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-7">
+                {lang === "hi" ? "तैयार हैं?" : "Ready?"}
+              </p>
               <h3 className="font-display text-6xl font-semibold text-ink leading-[0.95] mb-7">
-                Open your<br />
-                <span className="text-stamp">passbook.</span>
+                {lang === "hi" ? (
+                  <>{"अपनी"}<br /><span className="text-stamp">पासबुक खोलें.</span></>
+                ) : (
+                  <>Open your<br /><span className="text-stamp">passbook.</span></>
+                )}
               </h3>
               <p className="font-body text-sm text-ink/55 mb-10 leading-relaxed max-w-xs">
-                ₹1,00,000 in virtual cash. No credit card. No real money, ever.
-                15 lessons. Starts today.
+                {lang === "hi"
+                  ? "₹1,00,000 वर्चुअल कैश। कोई क्रेडिट कार्ड नहीं। वास्तविक पैसा कभी नहीं। 15 पाठ।"
+                  : "₹1,00,000 in virtual cash. No credit card. No real money, ever. 15 lessons. Starts today."}
               </p>
               <Link
                 href="/signup"
                 className="w-full flex items-center justify-center gap-3 bg-stamp text-paper font-body font-semibold text-base py-5 hover:opacity-90 transition-opacity"
                 style={{ boxShadow: "0 8px 24px rgba(140,47,57,0.25)" }}
               >
-                Start for free →
+                {t.startForFree}
               </Link>
               <p className="mt-5 font-mono text-[9px] text-muted text-center">
-                Simulated · Delayed prices · Not investment advice
+                {t.disclaimer}
               </p>
             </div>
           </motion.div>
@@ -822,11 +1050,11 @@ export default function HomePage() {
             <span className="font-display text-ink font-semibold text-xl tracking-tight">
               Nivesh<span className="text-stamp">Loop</span>
             </span>
-            <p className="font-mono text-[10px] text-muted mt-1.5">Learn. Trade. Reflect.</p>
+            <p className="font-mono text-[10px] text-muted mt-1.5">{t.learnTradeReflect}</p>
           </div>
           <p className="font-mono text-[9px] text-muted uppercase tracking-widest max-w-md text-right leading-relaxed">
-            Simulated portfolio · Prices delayed ~15 min<br />
-            Educational use only · Not investment advice · Not a brokerage
+            {t.disclaimer}<br />
+            {lang === "hi" ? "केवल शैक्षिक उपयोग · निवेश सलाह नहीं · ब्रोकरेज नहीं" : "Educational use only · Not investment advice · Not a brokerage"}
           </p>
         </div>
       </footer>

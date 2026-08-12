@@ -42,38 +42,41 @@ export function FeatureSandbox() {
   }
 
   return (
-    <div className="border border-rule/30 bg-paper rounded-sm overflow-hidden shadow-lg my-12">
+    <div className="border border-rule/40 bg-paper/95 backdrop-blur-md rounded-sm overflow-hidden shadow-2xl my-12 passbook-card">
       {/* Sandbox Header */}
-      <div className="bg-ink text-paper p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-rule/20">
-        <div>
+      <div className="bg-ink text-paper p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-rule/20 relative">
+        <div className="absolute inset-0 dotgrid-bg opacity-20 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-stamp" />
+
+        <div className="relative">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-[9px] uppercase tracking-widest text-stamp bg-stamp/20 px-2 py-0.5 rounded-sm">
-              Live Sandbox
+            <span className="font-mono text-[9px] uppercase tracking-widest text-stamp bg-stamp/20 border border-stamp/30 px-2 py-0.5 rounded-xs font-bold">
+              Live Simulator
             </span>
-            <span className="font-mono text-[9px] text-paper/40 uppercase tracking-widest">
-              Try the mechanics
+            <span className="font-mono text-[9px] text-paper/50 uppercase tracking-widest">
+              Try NiveshLoop Mechanics
             </span>
           </div>
           <h3 className="font-display text-xl font-semibold text-paper">
-            Interactive Product Sandbox
+            Interactive Behavioral Sandbox
           </h3>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex items-center gap-1 bg-white/10 p-1 rounded-sm border border-white/10 self-stretch sm:self-auto">
+        <div className="relative flex items-center gap-1 bg-white/10 p-1.5 rounded-sm border border-white/15 self-stretch sm:self-auto backdrop-blur-sm">
           {[
-            { id: "cooldown", label: "10s Cooldown" },
-            { id: "unlock", label: "Dynamic Unlock" },
-            { id: "stamp", label: "Stamp Press" },
+            { id: "cooldown", label: "10s Cooldown Pause" },
+            { id: "unlock", label: "Dynamic Form Unlock" },
+            { id: "stamp", label: "Genuine Stamp Press" },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveDemo(tab.id as any)}
               className={[
-                "flex-1 sm:flex-none font-mono text-xs px-3 py-1.5 rounded-sm transition-all",
+                "flex-1 sm:flex-none font-mono text-xs px-3.5 py-1.5 rounded-xs transition-all duration-200 select-none",
                 activeDemo === tab.id
-                  ? "bg-stamp text-paper shadow-sm font-semibold"
-                  : "text-paper/60 hover:text-paper hover:bg-white/5",
+                  ? "bg-stamp text-paper shadow-md font-bold glow-border-stamp"
+                  : "text-paper/60 hover:text-paper hover:bg-white/10",
               ].join(" ")}
             >
               {tab.label}
@@ -83,44 +86,45 @@ export function FeatureSandbox() {
       </div>
 
       {/* Sandbox Workspace Body */}
-      <div className="p-6 sm:p-10 ledger-bg relative min-h-[320px] flex items-center justify-center">
+      <div className="p-6 sm:p-10 ledger-bg relative min-h-[340px] flex items-center justify-center">
         <AnimatePresence mode="wait">
           {/* DEMO 1: COOLDOWN NUDGE */}
           {activeDemo === "cooldown" && (
             <motion.div
               key="cooldown-demo"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="w-full max-w-md bg-paper border border-rule/30 p-6 shadow-md relative"
+              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -12, scale: 0.98 }}
+              transition={{ duration: 0.3 }}
+              className="w-full max-w-md bg-paper border border-rule/35 p-6 shadow-xl relative passbook-card"
             >
               <div className="flex justify-between items-center mb-4 border-b border-rule/15 pb-3">
                 <div>
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-loss font-semibold">
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-loss font-bold px-2 py-0.5 bg-loss/10 rounded-xs border border-loss/20">
                     Market Drop Alert (-4.2%)
                   </span>
-                  <p className="font-display text-base font-semibold text-ink">
+                  <p className="font-display text-base font-semibold text-ink mt-1">
                     Selling 10 × TCS.NS
                   </p>
                 </div>
-                <span className="font-mono text-xs tabular-nums text-muted">₹38,452.00</span>
+                <span className="font-mono text-xs tabular-nums text-ink font-semibold">₹38,452.00</span>
               </div>
 
               {cooldownTime !== null ? (
-                <div className="border border-stamp/30 bg-stamp/5 p-5 text-center rounded-sm">
+                <div className="border border-stamp/40 bg-stamp/10 p-5 text-center rounded-xs backdrop-blur-xs glow-border-stamp">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <span className="relative flex h-3 w-3">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-stamp opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-stamp"></span>
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-stamp opacity-75" />
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-stamp" />
                     </span>
-                    <span className="font-mono text-xs font-semibold text-stamp uppercase tracking-widest">
+                    <span className="font-mono text-xs font-bold text-stamp uppercase tracking-widest">
                       Behavioral Cooldown Active
                     </span>
                   </div>
-                  <p className="font-body text-xs text-ink/70 mb-4 max-w-xs mx-auto">
-                    Selling during a drop often locks in temporary panic. Take 10 seconds to confirm this fits your plan.
+                  <p className="font-body text-xs text-ink/80 mb-4 max-w-xs mx-auto leading-relaxed">
+                    Selling during a drop often locks in temporary panic. Take 10 seconds to pause and confirm this fits your long-term plan.
                   </p>
-                  <div className="font-mono text-3xl font-bold text-stamp tabular-nums mb-4">
+                  <div className="font-mono text-4xl font-extrabold text-stamp tabular-nums mb-4 drop-shadow-xs">
                     00:0{cooldownTime}
                   </div>
                   <button
@@ -129,26 +133,26 @@ export function FeatureSandbox() {
                       setCooldownTime(null);
                       setCooldownTriggered(false);
                     }}
-                    className="w-full font-mono text-xs uppercase tracking-widest bg-stamp text-paper py-2.5 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    className="w-full font-mono text-xs font-bold uppercase tracking-widest bg-stamp text-paper py-3 rounded-xs disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.99] transition-all shadow-md"
                   >
-                    {cooldownTime > 0 ? `Confirm Sell (${cooldownTime}s)` : "Confirm Panic Sell →"}
+                    {cooldownTime > 0 ? `Confirm Sell (${cooldownTime}s remaining)` : "Confirm Panic Sell →"}
                   </button>
                 </div>
               ) : (
                 <div>
-                  <p className="font-body text-xs text-ink/70 mb-4">
-                    In real investing, panic selling during dips is the #1 beginner mistake. Click below to see how NiveshLoop adds a 10s breathing pause.
+                  <p className="font-body text-xs text-ink/75 mb-5 leading-relaxed">
+                    In real investing, panic-selling during dips is the #1 beginner mistake. Click below to experience how NiveshLoop introduces a 10s breathing pause before confirmation.
                   </p>
                   <button
                     onClick={triggerCooldown}
-                    className="w-full font-body text-sm font-semibold bg-loss text-paper py-3 hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                    className="w-full font-body text-sm font-semibold bg-loss text-paper py-3.5 rounded-xs hover:opacity-95 active:scale-[0.99] transition-all shadow-md flex items-center justify-center gap-2"
                   >
                     <span>Simulate Panic Sell</span>
-                    <span className="font-mono text-xs opacity-75">(-4.2% drop)</span>
+                    <span className="font-mono text-xs opacity-80">(-4.2% market dip)</span>
                   </button>
                   {cooldownTriggered && (
-                    <p className="font-mono text-[9px] text-gain text-center mt-2">
-                      ✓ Cooldown completed. Trade executed with intent, not impulse.
+                    <p className="font-mono text-[10px] text-gain font-semibold text-center mt-3 flex items-center justify-center gap-1">
+                      <span>✓</span> Cooldown completed. Trade executed with intent, not impulse.
                     </p>
                   )}
                 </div>
@@ -160,32 +164,26 @@ export function FeatureSandbox() {
           {activeDemo === "unlock" && (
             <motion.div
               key="unlock-demo"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="w-full max-w-md bg-paper border border-rule/30 p-6 shadow-md"
+              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -12, scale: 0.98 }}
+              transition={{ duration: 0.3 }}
+              className="w-full max-w-md bg-paper border border-rule/35 p-6 shadow-xl passbook-card"
             >
-              <div className="flex justify-between items-center mb-4 border-b border-rule/15 pb-3">
-                <span className="font-display text-sm font-semibold text-ink">Trade Ticket UI</span>
+              <div className="flex justify-between items-center mb-5 border-b border-rule/15 pb-3">
+                <div>
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-muted block mb-0.5">Order Ticket UI</span>
+                  <span className="font-display text-sm font-semibold text-ink">Dynamic Order Form</span>
+                </div>
                 <button
                   onClick={() => setUnlocked(!unlocked)}
-                  className="font-mono text-[10px] uppercase tracking-widest border border-stamp/40 text-stamp px-2.5 py-1 rounded-sm hover:bg-stamp hover:text-paper transition-all"
+                  className="font-mono text-[10px] font-bold uppercase tracking-widest bg-stamp text-paper px-3 py-1.5 rounded-xs hover:opacity-90 active:scale-[0.98] transition-all shadow-xs"
                 >
-                  {unlocked ? "Reset (Lock)" : "Complete Lesson 5 →"}
+                  {unlocked ? "🔒 Relock Form" : "🎓 Complete Lesson 5 →"}
                 </button>
               </div>
 
-              <div className="space-y-3">
-                <div>
-                  <label className="font-mono text-[9px] uppercase tracking-widest text-muted block mb-1">
-                    Symbol & Price
-                  </label>
-                  <div className="font-mono text-xs border border-rule/25 px-3 py-2 bg-paper flex justify-between">
-                    <span>INFY.NS</span>
-                    <span className="tabular-nums font-semibold">₹1,542.75</span>
-                  </div>
-                </div>
-
+              <div className="space-y-4">
                 <div>
                   <label className="font-mono text-[9px] uppercase tracking-widest text-muted block mb-1">
                     Quantity
@@ -194,7 +192,7 @@ export function FeatureSandbox() {
                     type="number"
                     readOnly
                     value="5"
-                    className="w-full font-mono text-xs border border-rule/25 px-3 py-2 bg-paper"
+                    className="w-full font-mono text-xs border border-rule/25 px-3 py-2 bg-paper rounded-xs font-semibold text-ink"
                   />
                 </div>
 
@@ -211,7 +209,7 @@ export function FeatureSandbox() {
                         <div className="flex justify-between items-center mb-1">
                           <label className="font-mono text-[9px] uppercase tracking-widest text-stamp font-semibold flex items-center gap-1">
                             <span>🛡️ Stop-loss trigger</span>
-                            <span className="bg-stamp/15 text-stamp px-1 rounded text-[7px]">
+                            <span className="bg-stamp/15 text-stamp px-1 rounded text-[7px] font-bold">
                               Unlocked!
                             </span>
                           </label>
@@ -222,21 +220,21 @@ export function FeatureSandbox() {
                             type="number"
                             readOnly
                             value="1480.00"
-                            className="w-full font-mono text-xs border-2 border-stamp/40 px-3 py-2 bg-stamp/5 text-ink font-semibold"
+                            className="w-full font-mono text-xs border-2 border-stamp/40 px-3 py-2 bg-stamp/5 text-ink font-semibold rounded-xs"
                           />
-                          <span className="absolute right-3 top-2.5 font-mono text-[9px] text-loss">
+                          <span className="absolute right-3 top-2.5 font-mono text-[9px] text-loss font-bold">
                             -4.0% Protection
                           </span>
                         </div>
                       </div>
                     </motion.div>
                   ) : (
-                    <div className="border border-dashed border-rule/30 p-3 text-center bg-rule/[0.02]">
-                      <p className="font-mono text-[9px] text-muted uppercase tracking-widest">
+                    <div className="border border-dashed border-rule/30 p-3 text-center bg-rule/[0.02] rounded-xs">
+                      <p className="font-mono text-[9px] text-muted uppercase tracking-widest font-semibold">
                         🔒 Stop-loss field locked
                       </p>
                       <p className="font-body text-[11px] text-ink/60 mt-0.5">
-                        Complete Lesson 5 ("Stop-losses") to unlock automatic downside protection.
+                        Complete Lesson 5 (&quot;Stop-losses&quot;) to unlock automatic downside protection.
                       </p>
                     </div>
                   )}

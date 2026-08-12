@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -66,47 +66,46 @@ export function LessonsClientView({ lessonStates, totalCompleted, totalLessons }
     <div className="min-h-screen bg-paper">
 
       {/* ══ HERO HEADER ══════════════════════════════════════════════════ */}
-      <div className="relative overflow-hidden border-b border-rule/25 bg-ink">
+      <div className="relative overflow-hidden border-b border-rule/25 bg-ink shadow-2xl">
         {/* Ledger lines on dark */}
         <div className="absolute inset-0"
           style={{ backgroundImage: "repeating-linear-gradient(transparent,transparent 47px,rgba(92,122,99,0.06) 47px,rgba(92,122,99,0.06) 48px)" }}
         />
+        {/* Ambient mesh background */}
+        <div className="absolute inset-0 mesh-dark opacity-80" />
         {/* Dot grid */}
-        <div className="absolute inset-0 opacity-[0.06]"
-          style={{ backgroundImage: "radial-gradient(circle, rgba(92,122,99,1) 1px, transparent 1px)", backgroundSize: "20px 20px" }}
-        />
+        <div className="absolute inset-0 opacity-[0.06] dotgrid-bg pointer-events-none" />
         {/* Stamp spine */}
-        <div className="absolute left-0 top-0 bottom-0 w-2 bg-stamp/80" />
+        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-stamp via-stamp/80 to-stamp" />
 
-        <div className="relative max-w-4xl mx-auto px-6 sm:px-10 py-10">
+        <div className="relative max-w-5xl mx-auto px-6 sm:px-10 py-12">
           <div className="flex items-start justify-between gap-8">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-5">
-                <Link href="/dashboard" className="font-mono text-[10px] uppercase tracking-widest text-paper/40 hover:text-paper/70 transition-colors">
+              <div className="flex items-center gap-3 mb-6">
+                <Link href="/dashboard" className="font-mono text-[10px] font-bold uppercase tracking-widest text-paper/60 hover:text-paper transition-colors bg-white/10 px-2.5 py-1 rounded-xs border border-white/10">
                   ← Dashboard
                 </Link>
-                <span className="text-paper/20">·</span>
-                <span className="font-mono text-[10px] uppercase tracking-widest text-paper/30">
-                  NiveshLoop · Curriculum
+                <span className="text-paper/30">·</span>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-paper/40 font-semibold">
+                  NiveshLoop Curriculum
                 </span>
               </div>
 
               <motion.h1
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="font-display text-4xl sm:text-5xl font-semibold text-paper leading-[1.0] mb-3"
+                className="font-display text-4xl sm:text-5xl font-semibold text-paper leading-[1.0] mb-4"
               >
                 Your<br />
-                <span className="text-stamp italic">learning path.</span>
+                <span className="text-stamp italic drop-shadow-xs">learning path.</span>
               </motion.h1>
 
               <motion.p
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="font-body text-sm text-paper/50 max-w-sm leading-relaxed"
+                className="font-body text-sm text-paper/65 max-w-md leading-relaxed"
               >
-                15 lessons. Each one ends with a simulated trade. Complete them
-                in order — every lesson unlocks a real feature in your portfolio.
+                15 interactive lessons. Each one connects directly to a simulated trade. Complete them in order — every lesson unlocks a real tool in your portfolio.
               </motion.p>
             </div>
 
@@ -114,11 +113,11 @@ export function LessonsClientView({ lessonStates, totalCompleted, totalLessons }
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.1, ease: [0.34, 1.56, 0.64, 1] }}
-              className="hidden sm:flex flex-col items-center gap-3"
+              className="hidden sm:flex flex-col items-center gap-3 bg-white/5 border border-white/10 p-4 rounded-sm backdrop-blur-md shadow-xl"
             >
               <ProgressRing completed={totalCompleted} total={totalLessons} size={90} />
-              <p className="font-mono text-[9px] uppercase tracking-widest text-paper/35 text-center">
-                {pctDone.toFixed(0)}% done
+              <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-paper/60 text-center">
+                {pctDone.toFixed(0)}% Mastered
               </p>
             </motion.div>
           </div>
@@ -127,15 +126,15 @@ export function LessonsClientView({ lessonStates, totalCompleted, totalLessons }
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="mt-6"
+            className="mt-8 bg-white/5 p-4 rounded-xs border border-white/10"
           >
             <div className="flex justify-between items-baseline mb-2">
-              <span className="font-mono text-[9px] uppercase tracking-widest text-paper/30">Progress</span>
-              <span className="font-mono text-[9px] tabular-nums text-paper/40">
-                {totalCompleted} of {totalLessons}
+              <span className="font-mono text-[10px] uppercase tracking-widest text-paper/50 font-bold">Overall Progress</span>
+              <span className="font-mono text-[10px] tabular-nums text-paper/70 font-semibold">
+                {totalCompleted} of {totalLessons} Lessons Stamped
               </span>
             </div>
-            <div className="h-1.5 bg-paper/10 rounded-full overflow-hidden">
+            <div className="h-2 bg-paper/15 rounded-full overflow-hidden p-0.5">
               <motion.div
                 className="h-full rounded-full"
                 style={{ background: pctDone === 100 ? "#8C2F39" : "#2F6B4F" }}
@@ -151,14 +150,14 @@ export function LessonsClientView({ lessonStates, totalCompleted, totalLessons }
             <motion.div
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="mt-4 flex items-center gap-3"
+              className="mt-5 flex items-center gap-3 bg-stamp/20 border border-stamp/40 px-4 py-2 rounded-xs"
             >
-              <span className="font-mono text-[9px] uppercase tracking-widest text-paper/30">Up next →</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-paper/60 font-bold">Up Next →</span>
               <Link
                 href={`/lessons/${nextUnlocked.lesson.slug}`}
-                className="font-mono text-xs text-stamp/80 hover:text-stamp transition-colors"
+                className="font-mono text-xs text-paper font-bold hover:underline"
               >
-                {nextUnlocked.lesson.title}
+                Lesson {nextUnlocked.lesson.orderIndex}: {nextUnlocked.lesson.title}
               </Link>
             </motion.div>
           )}
@@ -166,13 +165,12 @@ export function LessonsClientView({ lessonStates, totalCompleted, totalLessons }
       </div>
 
       {/* ══ LESSON CARDS ═════════════════════════════════════════════════ */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-8 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-8 py-10">
 
         {/* Grid of lesson cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {lessonStates.map(({ lesson, completed, locked, unlocksLabel }, idx) => {
             const icon = LESSON_ICONS[lesson.orderIndex] ?? "📚";
-            const isHovered = hoveredIdx === idx;
             const isNext = !completed && !locked && lessonStates.slice(0, idx).every(s => s.completed);
 
             return (
@@ -187,80 +185,80 @@ export function LessonsClientView({ lessonStates, totalCompleted, totalLessons }
               >
                 {/* "NEXT" badge */}
                 {isNext && (
-                  <div className="absolute -top-2 -right-2 z-10 bg-stamp text-paper font-mono text-[8px] uppercase tracking-widest px-2 py-0.5">
-                    Up next
+                  <div className="absolute -top-2.5 -right-2 z-20 bg-stamp text-paper font-mono text-[8px] uppercase tracking-widest px-2.5 py-0.5 rounded-xs font-extrabold shadow-md glow-border-stamp">
+                    Up Next
                   </div>
                 )}
 
                 <Link
                   href={locked ? "/lessons" : `/lessons/${lesson.slug}`}
                   className={[
-                    "block border rounded-sm p-5 transition-all duration-200 relative overflow-hidden",
+                    "block border rounded-xs p-5 transition-all duration-200 relative overflow-hidden passbook-card",
                     locked
-                      ? "border-rule/15 bg-rule/[0.02] cursor-not-allowed opacity-50"
+                      ? "border-rule/20 bg-rule/[0.03] cursor-not-allowed opacity-60"
                       : completed
-                      ? "border-gain/25 bg-paper hover:border-gain/50"
+                      ? "border-gain/40 bg-paper hover:border-gain/60 glow-border-gain"
                       : isNext
-                      ? "border-stamp/40 bg-paper hover:border-stamp/70 shadow-sm"
-                      : "border-rule/25 bg-paper hover:border-rule/50",
+                      ? "border-stamp/50 bg-paper hover:border-stamp/80 shadow-md glow-border-stamp"
+                      : "border-rule/30 bg-paper hover:border-rule/50",
                   ].join(" ")}
                 >
                   {/* Completed green tint bar */}
                   {completed && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gain/60" />
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gain" />
                   )}
                   {isNext && !completed && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-stamp/80" />
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-stamp" />
                   )}
 
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <span className="text-xl leading-none" aria-hidden>{icon}</span>
-                      <span className="font-mono text-[9px] uppercase tracking-widest text-muted tabular-nums">
+                      <span className="font-mono text-[9.5px] uppercase font-bold tracking-widest text-muted tabular-nums">
                         L-{String(lesson.orderIndex).padStart(2, "0")}
                       </span>
                     </div>
                     <div>
                       {locked ? (
-                        <span className="font-mono text-[9px] text-muted/50">🔒</span>
+                        <span className="font-mono text-[10px] text-muted/50">🔒</span>
                       ) : completed ? (
                         <Stamp label={lesson.title} earned size="sm" animateOnMount={false} />
                       ) : (
-                        <span className="font-mono text-[9px] text-muted/40">○</span>
+                        <span className="font-mono text-[10px] text-stamp font-bold">○</span>
                       )}
                     </div>
                   </div>
 
                   <p className={[
-                    "font-display text-sm font-semibold leading-snug mb-2",
+                    "font-display text-base font-semibold leading-snug mb-2",
                     locked ? "text-muted/60" : "text-ink",
                   ].join(" ")}>
                     {lesson.title}
                   </p>
 
                   {unlocksLabel && !locked && (
-                    <div className="flex items-center gap-1.5 mt-2">
-                      <span className="font-mono text-[8px] uppercase tracking-widest text-muted/50">Unlocks</span>
-                      <span className="font-mono text-[8px] text-stamp/70 uppercase tracking-widest truncate">
+                    <div className="flex items-center gap-1.5 mt-2 bg-rule/5 px-2 py-1 rounded-xs border border-rule/15">
+                      <span className="font-mono text-[8px] uppercase tracking-widest text-muted font-semibold">Unlocks</span>
+                      <span className="font-mono text-[8px] text-stamp font-bold uppercase tracking-widest truncate">
                         {unlocksLabel}
                       </span>
                     </div>
                   )}
 
                   {/* Status row */}
-                  <div className="mt-3 pt-3 border-t border-rule/10 flex items-center justify-between">
+                  <div className="mt-4 pt-3 border-t border-rule/15 flex items-center justify-between">
                     {completed ? (
-                      <span className="font-mono text-[9px] uppercase tracking-widest text-gain">
-                        ✓ Done
+                      <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-gain flex items-center gap-1">
+                        ✓ Stamped
                       </span>
                     ) : locked ? (
-                      <span className="font-mono text-[9px] text-muted/40">Locked</span>
+                      <span className="font-mono text-[9px] text-muted/50">Locked</span>
                     ) : (
-                      <span className="font-mono text-[9px] uppercase tracking-widest text-stamp/70">
-                        {isNext ? "Start →" : "Available"}
+                      <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-stamp">
+                        {isNext ? "Start Lesson →" : "Available"}
                       </span>
                     )}
-                    <span className="font-mono text-[8px] text-muted/30 tabular-nums">~4 min</span>
+                    <span className="font-mono text-[8.5px] text-muted/60 tabular-nums">~4 min read</span>
                   </div>
                 </Link>
               </motion.div>
@@ -272,16 +270,16 @@ export function LessonsClientView({ lessonStates, totalCompleted, totalLessons }
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="mt-10 border border-rule/20 bg-rule/[0.03] p-4 flex items-start gap-3"
+          className="mt-10 border border-rule/30 bg-paper/90 p-5 rounded-xs shadow-sm flex items-start gap-3"
         >
-          <span className="font-mono text-stamp/50 text-base mt-0.5">—</span>
-          <p className="font-body text-xs text-ink/50 leading-relaxed">
-            Lesson bodies are currently <strong>placeholder content</strong> for testing. Unlock
-            wiring, lesson flow, and trade-form behavior are fully functional.
-            Simulated portfolio · Prices delayed ~15 min · Not investment advice.
+          <span className="font-mono text-stamp font-bold text-lg mt-0.5">—</span>
+          <p className="font-body text-xs text-ink/75 leading-relaxed">
+            NiveshLoop lessons connect theory straight to simulated order forms.
+            Educational portfolio simulation · Delayed prices ~15 min · Zero real money.
           </p>
         </motion.div>
       </div>
     </div>
   );
 }
+
