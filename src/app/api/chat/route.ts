@@ -190,7 +190,52 @@ Guidelines:
       }
     }
 
-    // Dynamic educational response generator fallback (when API key is not configured)
+    // Smart conversational pattern matchers for identity, greetings, and app help
+    if (
+      lowerMsg.includes("who are u") ||
+      lowerMsg.includes("who are you") ||
+      lowerMsg.includes("who r u") ||
+      lowerMsg.includes("what is your name") ||
+      lowerMsg.includes("what's your name") ||
+      lowerMsg.includes("tell me about yourself")
+    ) {
+      return NextResponse.json({
+        reply:
+          "Namaste! I am **Nivesh AI**, your interactive educational mentor on NiveshLoop! I'm here to guide you through stock market fundamentals, explain order types, stop-losses, P/E ratios, and help you practice simulated trading risk-free with your ₹1,00,000 virtual balance." +
+          DISCLAIMER,
+      });
+    }
+
+    if (
+      lowerMsg === "hi" ||
+      lowerMsg === "hello" ||
+      lowerMsg === "hey" ||
+      lowerMsg === "namaste" ||
+      lowerMsg.startsWith("hi ") ||
+      lowerMsg.startsWith("hello ")
+    ) {
+      return NextResponse.json({
+        reply:
+          "Hello! Ready to learn about stock market investing? You can ask me about **Stop-Loss orders**, **Market vs Limit orders**, **Index Funds**, **P/E ratios**, or how to use NiveshLoop's simulated trading terminal!" +
+          DISCLAIMER,
+      });
+    }
+
+    if (
+      lowerMsg.includes("how to buy") ||
+      lowerMsg.includes("how to trade") ||
+      lowerMsg.includes("how to start") ||
+      lowerMsg.includes("how does this app work") ||
+      lowerMsg.includes("how to use")
+    ) {
+      return NextResponse.json({
+        reply:
+          "Here is how to get started on NiveshLoop:\n\n1. **Complete Lesson 1** (*What is a stock?*) to unlock your simulated trading terminal.\n2. **Open the Trade tab** on your dashboard to select any Indian stock (e.g. RELIANCE, TCS, TATAMOTORS).\n3. **Place a Buy order** using your ₹1,00,000 virtual cash balance to see real-time price charts and test your strategy risk-free!" +
+          DISCLAIMER,
+      });
+    }
+
+    // Knowledge base matching fallback
     const matched = KNOWLEDGE_BASE.find((item) =>
       item.keywords.some((kw) => lowerMsg.includes(kw))
     );
@@ -200,12 +245,12 @@ Guidelines:
     }
 
     // Dynamic contextual assistant response
-    const dynamicReply = `That's an interesting question about **"${lastUserMessage}"**!
+    const dynamicReply = `Great question about **"${lastUserMessage}"**!
 
 In stock market investing, here are key fundamentals to consider:
-- **Understand the Core Business**: Look at what the company actually sells and its earnings growth.
+- **Understand the Core Business**: Look at what the company actually sells and its revenue growth.
 - **Risk Management**: Always use Stop-Loss protection and diversify across multiple sectors (e.g. IT, Banking, Energy).
-- **Long-Term Thinking**: Focus on business quality rather than short-term price noise.
+- **Long-Term Thinking**: Focus on business quality rather than short-term price fluctuations.
 
 Feel free to ask me to explain any specific concept like **P/E ratio**, **Stop-Loss**, **Limit Orders**, or **Index Funds**!` + DISCLAIMER;
 

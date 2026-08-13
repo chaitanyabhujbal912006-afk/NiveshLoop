@@ -43,4 +43,19 @@ describe("Nivesh AI Chat API (/api/chat)", () => {
     const data = await res.json();
     expect(data.reply).toContain("cannot recommend specific stock purchases");
   });
+
+  it("answers identity questions like 'who are u' conversationally", async () => {
+    const req = new NextRequest("http://localhost:3000/api/chat", {
+      method: "POST",
+      body: JSON.stringify({
+        messages: [{ role: "user", content: "who are u" }],
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.reply).toContain("Nivesh AI");
+    expect(data.reply).toContain("interactive educational mentor");
+  });
 });
