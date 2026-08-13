@@ -15,6 +15,7 @@ import { AllocationBar } from "./AllocationBar";
 import { PortfolioGauge } from "./PortfolioGauge";
 import { Sparkline } from "./Sparkline";
 import { RealtimeTradingTerminal } from "./RealtimeTradingTerminal";
+import { AiChatAssistant } from "./AiChatAssistant";
 import { LanguageToggle } from "./LanguageToggle";
 import { hasUnlocked } from "@/lib/unlocks";
 import type { PriceQuote, TradeSide } from "@/types";
@@ -47,7 +48,7 @@ interface DashboardViewProps {
   completedLessonSlugs: string[];
 }
 
-type Tab = "ledger" | "trade" | "insights";
+type Tab = "ledger" | "trade" | "insights" | "ai-chat";
 
 export function DashboardView({
   userEmail,
@@ -146,6 +147,7 @@ export function DashboardView({
     { id: "ledger", label: "Ledger" },
     { id: "trade", label: canTrade ? "Trade" : "Trade 🔒", locked: !canTrade },
     { id: "insights", label: hasInsightsUnlocked ? "Insights" : "Insights 🔒", locked: !hasInsightsUnlocked },
+    { id: "ai-chat", label: "AI Mentor 🤖" },
   ];
 
   return (
@@ -623,8 +625,32 @@ export function DashboardView({
               )}
             </motion.div>
           )}
+
+          {activeTab === "ai-chat" && (
+            <motion.div
+              key="ai-chat"
+              initial={{ rotateY: 15, opacity: 0 }}
+              animate={{ rotateY: 0, opacity: 1 }}
+              exit={{ rotateY: -15, opacity: 0 }}
+              transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
+              style={{ transformStyle: "preserve-3d", perspective: 1000 }}
+            >
+              <AiChatAssistant />
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
+
+      {/* Floating AI Assistant Quick Trigger Button */}
+      {activeTab !== "ai-chat" && (
+        <button
+          onClick={() => setActiveTab("ai-chat")}
+          className="fixed bottom-6 right-6 z-50 bg-stamp text-paper px-4 py-3 border-2 border-ink deep-shadow font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-[4px_4px_0_rgba(26,26,46,1)]"
+        >
+          <span className="text-lg">🤖</span>
+          Ask Nivesh AI
+        </button>
+      )}
 
       {/* Disclaimers */}
       <footer className="relative z-10 border-t-2 border-ink py-8 px-6 sm:px-10 text-center max-w-6xl mx-auto mt-12">

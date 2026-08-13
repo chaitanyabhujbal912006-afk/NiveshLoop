@@ -387,9 +387,9 @@ export function LessonDetailClient({
                     )}
                     <Link
                       href="/dashboard"
-                      className="flex-1 flex items-center justify-center gap-2 border border-rule/35 text-ink py-3 font-body text-sm hover:border-rule/60 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 bg-ink text-paper py-3 font-body font-medium text-sm hover:opacity-90 transition-opacity"
                     >
-                      ← Back to dashboard
+                      Practice in Trading Terminal →
                     </Link>
                   </div>
                 </motion.div>
