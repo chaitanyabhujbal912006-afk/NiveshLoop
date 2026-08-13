@@ -74,8 +74,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const grokKey = process.env.GROK_API_KEY || process.env.XAI_API_KEY;
-    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    const grokKey = (process.env.GROK_API_KEY || process.env.XAI_API_KEY || process.env.GROQ_API_KEY || "").trim();
+    const geminiKey = (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "").trim();
 
     const systemInstruction = `You are Nivesh AI, an enthusiastic, highly intelligent, and helpful educational assistant for NiveshLoop (a free Indian stock market learning web app with simulated trading).
 Answer the user's question dynamically, conversationally, and clearly in simple, engaging terms suitable for beginners.
@@ -85,19 +85,48 @@ Guidelines:
 3. Never give personalized financial advice, price predictions, or specific stock buy recommendations.
 4. Use formatting (bullet points, bold text) for readability. Keep answers clear and under 200 words.`;
 
-    // 1. Try Grok (xAI) API if GROK_API_KEY is available
+    const chatMessages = messages
+      .filter((m) => m.role === "user" || m.role === "assistant")
+      .map((m) => ({
+        role: (m.sender === "user" || m.role === "user" ? "user" : "assistant") as "user" | "assistant",
+        content: m.content,
+      }));
+
+    if (chatMessages.length === 0) {
+      chatMessages.push({ role: "user", content: lastUserMessage });
+    }
+
+    // 1. If key is a Groq key (starts with gsk_) or GROQ_API_KEY
+    if (grokKey.startsWith("gsk_")) {
+      try {
+        const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${grokKey}`,
+          },
+          body: JSON.stringify({
+            messages: [{ role: "system", content: systemInstruction }, ...chatMessages],
+            model: "llama-3.3-70b-versatile",
+            temperature: 0.7,
+          }),
+        });
+
+        if (groqRes.ok) {
+          const groqData = await groqRes.json();
+          const text = groqData?.choices?.[0]?.message?.content;
+          if (text) {
+            return NextResponse.json({ reply: text + DISCLAIMER });
+          }
+        }
+      } catch (err) {
+        console.warn("Groq API call failed, falling back to xAI/Gemini", err);
+      }
+    }
+
+    // 2. Try xAI Grok API if key is present
     if (grokKey) {
       try {
-        const grokMessages = [
-          { role: "system", content: systemInstruction },
-          ...messages
-            .filter((m) => m.role === "user" || m.role === "assistant")
-            .map((m) => ({
-              role: m.sender === "user" || m.role === "user" ? "user" : "assistant",
-              content: m.content,
-            })),
-        ];
-
         const grokRes = await fetch("https://api.x.ai/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -105,9 +134,8 @@ Guidelines:
             Authorization: `Bearer ${grokKey}`,
           },
           body: JSON.stringify({
-            messages: grokMessages,
-            model: "grok-beta",
-            stream: false,
+            messages: [{ role: "system", content: systemInstruction }, ...chatMessages],
+            model: "grok-2-latest",
             temperature: 0.7,
           }),
         });
@@ -120,21 +148,15 @@ Guidelines:
           }
         }
       } catch (err) {
-        console.warn("Grok API call failed, trying Gemini API / fallback", err);
+        console.warn("xAI API call failed, trying Gemini / fallback", err);
       }
     }
 
-    // 2. Try Gemini API if GEMINI_API_KEY is available
-    const geminiContents = messages
-      .filter((m) => m.role === "user" || m.role === "assistant")
-      .map((m) => ({
-        role: m.sender === "user" || m.role === "user" ? "user" : "model",
-        parts: [{ text: m.content }],
-      }));
-
-    if (geminiContents.length === 0) {
-      geminiContents.push({ role: "user", parts: [{ text: lastUserMessage }] });
-    }
+    // 3. Try Gemini API if GEMINI_API_KEY is available
+    const geminiContents = chatMessages.map((m) => ({
+      role: m.role === "user" ? "user" : "model",
+      parts: [{ text: m.content }],
+    }));
 
     if (geminiKey) {
       try {
