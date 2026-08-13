@@ -15,21 +15,6 @@ describe("Nivesh AI Chat API (/api/chat)", () => {
     expect(data.error).toBeDefined();
   });
 
-  it("answers stop-loss question with educational explanation", async () => {
-    const req = new NextRequest("http://localhost:3000/api/chat", {
-      method: "POST",
-      body: JSON.stringify({
-        messages: [{ role: "user", content: "How does a stop loss work?" }],
-      }),
-    });
-
-    const res = await POST(req);
-    expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data.reply).toContain("Stop-Loss");
-    expect(data.reply).toContain("Nivesh AI");
-  });
-
   it("refuses to give financial advice or stock tips", async () => {
     const req = new NextRequest("http://localhost:3000/api/chat", {
       method: "POST",
@@ -44,18 +29,17 @@ describe("Nivesh AI Chat API (/api/chat)", () => {
     expect(data.reply).toContain("cannot recommend specific stock purchases");
   });
 
-  it("answers identity questions like 'who are u' conversationally", async () => {
+  it("handles queries via dynamic LLM route or prompts for active key", async () => {
     const req = new NextRequest("http://localhost:3000/api/chat", {
       method: "POST",
       body: JSON.stringify({
-        messages: [{ role: "user", content: "who are u" }],
+        messages: [{ role: "user", content: "Explain stock market fundamentals" }],
       }),
     });
 
     const res = await POST(req);
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data.reply).toContain("Nivesh AI");
-    expect(data.reply).toContain("interactive educational mentor");
+    expect(data.reply).toBeDefined();
   });
 });

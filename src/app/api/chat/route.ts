@@ -8,46 +8,6 @@ interface ChatMessage {
 
 const DISCLAIMER = "\n\n*Note: I am Nivesh AI, an educational assistant for NiveshLoop simulation. I explain concepts and app mechanics, but do not provide financial advice or stock recommendations.*";
 
-// Knowledge base of common beginner questions for instant, high-quality responses
-const KNOWLEDGE_BASE: Array<{ keywords: string[]; answer: string }> = [
-  {
-    keywords: ["stop loss", "stoploss", "stop-loss"],
-    answer: "A **Stop-Loss** is an automated order rule that exits your position if the stock price drops to a specific level you choose. For example, if you buy RELIANCE at ₹2,900 and set a stop-loss at ₹2,750, your shares sell automatically to prevent bigger losses. In NiveshLoop, Lesson 5 unlocks the stop-loss option on your buy forms!",
-  },
-  {
-    keywords: ["limit order", "market order", "order type"],
-    answer: "A **Market Order** executes immediately at the current available market price. A **Limit Order** lets you set the maximum price you're willing to pay for a buy, or minimum price for a sell — the trade only executes if the market hits your target price. Lesson 3 in NiveshLoop covers this in detail!",
-  },
-  {
-    keywords: ["index fund", "etf", "nifty 50"],
-    answer: "An **Index Fund** or ETF pools money to buy all 50 stocks in the NIFTY 50 index in equal proportions. Instead of trying to guess individual winning stocks, you invest in the growth of the overall Indian economy with instant diversification and lower risk. Lesson 7 unlocks index fund tagging in search!",
-  },
-  {
-    keywords: ["pe ratio", "p/e", "valuation", "price to earnings"],
-    answer: "The **Price-to-Earnings (P/E) Ratio** measures how much investors are paying for every ₹1 of profit a company makes. A P/E of 20 means you pay ₹20 for ₹1 of annual earning. Comparing P/E across companies in the same sector helps identify whether a stock is relatively expensive or undervalued.",
-  },
-  {
-    keywords: ["diversify", "diversification", "portfolio risk"],
-    answer: "**Diversification** means spreading your investments across different sectors (IT, Banking, Energy, FMCG). If one sector experiences a temporary downturn, your other holdings help balance your portfolio. Lesson 4 unlocks concentration nudges if any stock exceeds 40% of your portfolio!",
-  },
-  {
-    keywords: ["cooldown", "panic sell", "emotional investing"],
-    answer: "The **Cooldown Nudge** is NiveshLoop's signature reflective pause. If you try to sell a stock that dropped 5%+ today, a 10-second pause screen asks you to take a breath. It doesn't block your sell — it just gives you friction to avoid knee-jerk panic selling. Lesson 9 unlocks this!",
-  },
-  {
-    keywords: ["buy stock", "which stock", "recommend", "best stock", "should i buy"],
-    answer: "As an educational tutor, I don't give stock tips or buy recommendations! Instead, look for companies with strong revenue growth, manageable debt, reasonable P/E ratios, and consistent market position. You can practice evaluating stocks risk-free with your ₹1,00,000 virtual balance in NiveshLoop!",
-  },
-  {
-    keywords: ["sip", "systematic investment"],
-    answer: "A **SIP (Systematic Investment Plan)** lets you invest a fixed amount regularly (e.g. ₹1,000 every month) instead of a lump sum. This helps you average out purchase costs across market highs and lows — a strategy called Rupee Cost Averaging.",
-  },
-  {
-    keywords: ["cash balance", "virtual money", "real money"],
-    answer: "NiveshLoop is 100% free and educational! Your ₹1,00,000 balance is virtual simulated money. No real money or brokerage accounts are involved — you can experiment, make mistakes, and learn habits completely risk-free.",
-  },
-];
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -60,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     const lowerMsg = lastUserMessage.toLowerCase();
 
-    // Safety check: Refuse personalized buy/sell directives
+    // Safety check: Refuse personalized buy/sell stock recommendations
     if (
       lowerMsg.includes("which stock should i buy") ||
       lowerMsg.includes("give me stock tips") ||
@@ -80,10 +40,10 @@ export async function POST(req: NextRequest) {
     const systemInstruction = `You are Nivesh AI, an enthusiastic, highly intelligent, and helpful educational assistant for NiveshLoop (a free Indian stock market learning web app with simulated trading).
 Answer the user's question dynamically, conversationally, and clearly in simple, engaging terms suitable for beginners.
 Guidelines:
-1. Explain stock market concepts (NSE/BSE, NIFTY 50, SIP, P/E ratio, Stop-Loss, Index Funds, Limit Orders, Market Orders, Technical Analysis, Financial News).
-2. Maintain context of the ongoing conversation like a real AI assistant.
+1. Answer ANY user question, greeting, or concept query naturally like a real AI chatbot (ChatGPT/Gemini/Grok).
+2. Maintain context of the ongoing conversation.
 3. Never give personalized financial advice, price predictions, or specific stock buy recommendations.
-4. Use formatting (bullet points, bold text) for readability. Keep answers clear and under 200 words.`;
+4. Use formatting (bullet points, bold text) for readability. Keep answers clear and under 250 words.`;
 
     const chatMessages = messages
       .filter((m) => m.role === "user" || m.role === "assistant")
@@ -96,7 +56,7 @@ Guidelines:
       chatMessages.push({ role: "user", content: lastUserMessage });
     }
 
-    // 1. If key is a Groq key (starts with gsk_) or GROQ_API_KEY
+    // 1. Try Groq API if key starts with gsk_
     if (grokKey.startsWith("gsk_")) {
       try {
         const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -118,14 +78,20 @@ Guidelines:
           if (text) {
             return NextResponse.json({ reply: text + DISCLAIMER });
           }
+        } else {
+          const errText = await groqRes.text();
+          console.error("Groq API error:", groqRes.status, errText);
+          return NextResponse.json({
+            reply: `⚠️ Groq API key error (${groqRes.status}): Invalid API Key. Please get a free Groq key at console.groq.com/keys or a free Gemini key at aistudio.google.com/app/apikey and paste it into .env.local!` + DISCLAIMER,
+          });
         }
       } catch (err) {
-        console.warn("Groq API call failed, falling back to xAI/Gemini", err);
+        console.error("Groq API error:", err);
       }
     }
 
     // 2. Try xAI Grok API if key is present
-    if (grokKey) {
+    if (grokKey && !grokKey.startsWith("gsk_")) {
       try {
         const grokRes = await fetch("https://api.x.ai/v1/chat/completions", {
           method: "POST",
@@ -146,20 +112,23 @@ Guidelines:
           if (text) {
             return NextResponse.json({ reply: text + DISCLAIMER });
           }
+        } else {
+          const errText = await grokRes.text();
+          console.error("xAI API error:", grokRes.status, errText);
         }
       } catch (err) {
-        console.warn("xAI API call failed, trying Gemini / fallback", err);
+        console.error("xAI API error:", err);
       }
     }
 
     // 3. Try Gemini API if GEMINI_API_KEY is available
-    const geminiContents = chatMessages.map((m) => ({
-      role: m.role === "user" ? "user" : "model",
-      parts: [{ text: m.content }],
-    }));
-
     if (geminiKey) {
       try {
+        const geminiContents = chatMessages.map((m) => ({
+          role: m.role === "user" ? "user" : "model",
+          parts: [{ text: m.content }],
+        }));
+
         const geminiRes = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
           {
@@ -184,77 +153,22 @@ Guidelines:
           if (text) {
             return NextResponse.json({ reply: text + DISCLAIMER });
           }
+        } else {
+          const errText = await geminiRes.text();
+          console.error("Gemini API error:", geminiRes.status, errText);
+          return NextResponse.json({
+            reply: `⚠️ Gemini API error (${geminiRes.status}): Please check your GEMINI_API_KEY at aistudio.google.com/app/apikey!` + DISCLAIMER,
+          });
         }
       } catch (err) {
-        console.warn("Gemini API call failed, falling back to smart educational engine", err);
+        console.error("Gemini API error:", err);
       }
     }
 
-    // Smart conversational pattern matchers for identity, greetings, and app help
-    if (
-      lowerMsg.includes("who are u") ||
-      lowerMsg.includes("who are you") ||
-      lowerMsg.includes("who r u") ||
-      lowerMsg.includes("what is your name") ||
-      lowerMsg.includes("what's your name") ||
-      lowerMsg.includes("tell me about yourself")
-    ) {
-      return NextResponse.json({
-        reply:
-          "Namaste! I am **Nivesh AI**, your interactive educational mentor on NiveshLoop! I'm here to guide you through stock market fundamentals, explain order types, stop-losses, P/E ratios, and help you practice simulated trading risk-free with your ₹1,00,000 virtual balance." +
-          DISCLAIMER,
-      });
-    }
-
-    if (
-      lowerMsg === "hi" ||
-      lowerMsg === "hello" ||
-      lowerMsg === "hey" ||
-      lowerMsg === "namaste" ||
-      lowerMsg.startsWith("hi ") ||
-      lowerMsg.startsWith("hello ")
-    ) {
-      return NextResponse.json({
-        reply:
-          "Hello! Ready to learn about stock market investing? You can ask me about **Stop-Loss orders**, **Market vs Limit orders**, **Index Funds**, **P/E ratios**, or how to use NiveshLoop's simulated trading terminal!" +
-          DISCLAIMER,
-      });
-    }
-
-    if (
-      lowerMsg.includes("how to buy") ||
-      lowerMsg.includes("how to trade") ||
-      lowerMsg.includes("how to start") ||
-      lowerMsg.includes("how does this app work") ||
-      lowerMsg.includes("how to use")
-    ) {
-      return NextResponse.json({
-        reply:
-          "Here is how to get started on NiveshLoop:\n\n1. **Complete Lesson 1** (*What is a stock?*) to unlock your simulated trading terminal.\n2. **Open the Trade tab** on your dashboard to select any Indian stock (e.g. RELIANCE, TCS, TATAMOTORS).\n3. **Place a Buy order** using your ₹1,00,000 virtual cash balance to see real-time price charts and test your strategy risk-free!" +
-          DISCLAIMER,
-      });
-    }
-
-    // Knowledge base matching fallback
-    const matched = KNOWLEDGE_BASE.find((item) =>
-      item.keywords.some((kw) => lowerMsg.includes(kw))
-    );
-
-    if (matched) {
-      return NextResponse.json({ reply: matched.answer + DISCLAIMER });
-    }
-
-    // Dynamic contextual assistant response
-    const dynamicReply = `Great question about **"${lastUserMessage}"**!
-
-In stock market investing, here are key fundamentals to consider:
-- **Understand the Core Business**: Look at what the company actually sells and its revenue growth.
-- **Risk Management**: Always use Stop-Loss protection and diversify across multiple sectors (e.g. IT, Banking, Energy).
-- **Long-Term Thinking**: Focus on business quality rather than short-term price fluctuations.
-
-Feel free to ask me to explain any specific concept like **P/E ratio**, **Stop-Loss**, **Limit Orders**, or **Index Funds**!` + DISCLAIMER;
-
-    return NextResponse.json({ reply: dynamicReply });
+    // If no valid API key is configured or all calls fail
+    return NextResponse.json({
+      reply: `⚠️ No active AI API Key found. To enable real-time dynamic AI chat, add a free \`GEMINI_API_KEY\` from [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) or \`GROK_API_KEY\` from [console.groq.com/keys](https://console.groq.com/keys) to your \`.env.local\` file or Vercel environment variables!` + DISCLAIMER,
+    });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Failed to process message" },
