@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { InkNumber } from "./InkNumber";
 
 export interface CandlePoint {
@@ -52,8 +52,38 @@ export function PriceChart({
 }: PriceChartProps) {
   const [mode, setMode] = useState<"line" | "candlestick">(isCandlestickUnlocked ? "candlestick" : "line");
   const [hoverPoint, setHoverPoint] = useState<CandlePoint | null>(null);
+  const [fetchedCandles, setFetchedCandles] = useState<CandlePoint[] | null>(null);
+  const [chartLoading, setChartLoading] = useState<boolean>(false);
 
-  const candles = providedCandles || generateCandleHistory(currentPrice);
+  // Dynamically fetch historical candles for selected stock symbol
+  useEffect(() => {
+    if (providedCandles) return;
+    let active = true;
+    setChartLoading(true);
+
+    async function fetchHistory() {
+      try {
+        const res = await fetch(`/api/prices/history?symbol=${encodeURIComponent(symbol)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (active && Array.isArray(data.candles) && data.candles.length > 0) {
+            setFetchedCandles(data.candles);
+          }
+        }
+      } catch (err) {
+        // Fallback handles gracefully
+      } finally {
+        if (active) setChartLoading(false);
+      }
+    }
+
+    fetchHistory();
+    return () => {
+      active = false;
+    };
+  }, [symbol, providedCandles]);
+
+  const candles = providedCandles || fetchedCandles || generateCandleHistory(currentPrice);
 
   const minPrice = Math.min(...candles.map((c) => c.low));
   const maxPrice = Math.max(...candles.map((c) => c.high));

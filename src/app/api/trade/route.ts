@@ -39,14 +39,25 @@ export async function POST(req: NextRequest) {
 
   const admin = supabaseAdmin();
 
-  const { data: portfolio, error: pErr } = await admin
+  let { data: portfolio } = await admin
     .from("portfolios")
     .select("*")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
-  if (pErr || !portfolio) {
-    return NextResponse.json({ error: "Portfolio not found" }, { status: 404 });
+  if (!portfolio) {
+    // Auto-initialize portfolio for new users so trades never fail with missing portfolio
+    const { data: newP, error: initErr } = await admin
+      .from("portfolios")
+      .upsert({ user_id: user.id, cash_balance: 100000.0 })
+      .select("*")
+      .single();
+
+    if (initErr || !newP) {
+      console.error("Failed to auto-create portfolio:", initErr);
+      return NextResponse.json({ error: "Failed to initialize portfolio" }, { status: 500 });
+    }
+    portfolio = newP;
   }
 
   const quote = await getPrice(symbol);

@@ -63,7 +63,11 @@ export function LessonsClientView({ lessonStates, totalCompleted, totalLessons }
   const nextUnlocked = lessonStates.find(s => !s.completed && !s.locked);
 
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="min-h-screen bg-parchment-base grid-bg bg-grid-pattern relative overflow-x-hidden">
+      {/* Rotated Background Watermark */}
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-12 z-0 text-watermark font-display pointer-events-none select-none">
+        पाठ्यक्रम
+      </div>
 
       {/* ══ HERO HEADER ══════════════════════════════════════════════════ */}
       <div className="relative overflow-hidden border-b border-rule/25 bg-ink shadow-2xl">
@@ -193,14 +197,14 @@ export function LessonsClientView({ lessonStates, totalCompleted, totalLessons }
                 <Link
                   href={locked ? "/lessons" : `/lessons/${lesson.slug}`}
                   className={[
-                    "block border rounded-xs p-5 transition-all duration-200 relative overflow-hidden passbook-card",
+                    "block border-2 rounded-xs p-5 transition-all duration-200 relative overflow-hidden deep-shadow",
                     locked
-                      ? "border-rule/20 bg-rule/[0.03] cursor-not-allowed opacity-60"
+                      ? "border-ink/20 bg-paper/60 cursor-not-allowed opacity-60"
                       : completed
-                      ? "border-gain/40 bg-paper hover:border-gain/60 glow-border-gain"
+                      ? "border-gain bg-paper hover:-translate-y-1"
                       : isNext
-                      ? "border-stamp/50 bg-paper hover:border-stamp/80 shadow-md glow-border-stamp"
-                      : "border-rule/30 bg-paper hover:border-rule/50",
+                      ? "border-stamp bg-paper shadow-lg hover:-translate-y-1 font-semibold"
+                      : "border-ink bg-paper hover:-translate-y-1",
                   ].join(" ")}
                 >
                   {/* Completed green tint bar */}

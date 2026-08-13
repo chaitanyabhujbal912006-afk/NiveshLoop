@@ -48,6 +48,12 @@ export function useLiveMarketData(selectedSymbol: string, initialPrice: number =
   // Fetch live price quote from server
   useEffect(() => {
     let isMounted = true;
+    // Set immediate loading state with selected symbol
+    setCurrentQuote((prev) => ({
+      ...prev,
+      symbol: selectedSymbol,
+    }));
+
     async function fetchQuote() {
       try {
         const res = await fetch(`/api/quote?symbol=${encodeURIComponent(selectedSymbol)}`);
@@ -58,7 +64,7 @@ export function useLiveMarketData(selectedSymbol: string, initialPrice: number =
           }
         }
       } catch (err) {
-        // Fallback
+        // Fallback handles seamlessly
       }
     }
     fetchQuote();

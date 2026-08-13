@@ -12,7 +12,7 @@ import type { PriceQuote, TradeSide } from "@/types";
 interface RealtimeTradingTerminalProps {
   initialQuote?: PriceQuote | null;
   completedLessonSlugs: string[];
-  onSubmitTrade: (payload: { qty: number; stopLoss: number | null }) => Promise<void>;
+  onSubmitTrade: (payload: { symbol: string; side: TradeSide; qty: number; stopLoss: number | null }) => Promise<void>;
   tradeLoading?: boolean;
 }
 
@@ -200,7 +200,14 @@ export function RealtimeTradingTerminal({
             volume={currentQuote.volume}
             fiftyTwoWeekHigh={currentQuote.fiftyTwoWeekHigh}
             fiftyTwoWeekLow={currentQuote.fiftyTwoWeekLow}
-            onSubmit={onSubmitTrade}
+            onSubmit={(payload) =>
+              onSubmitTrade({
+                symbol: currentQuote.symbol,
+                side: tradeSide,
+                qty: payload.qty,
+                stopLoss: payload.stopLoss,
+              })
+            }
           />
 
           {/* Real-time Market Depth L2 Widget */}

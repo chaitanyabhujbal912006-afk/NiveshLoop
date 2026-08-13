@@ -193,7 +193,11 @@ export function LessonDetailClient({
   const icon = LESSON_ICONS[lesson.orderIndex] ?? "📚";
 
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="min-h-screen bg-parchment-base grid-bg bg-grid-pattern relative overflow-x-hidden">
+      {/* Background watermark */}
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-12 z-0 text-watermark font-display pointer-events-none select-none">
+        ज्ञान
+      </div>
 
       {/* ── Reading progress bar ─────────────────────────────────────── */}
       <div className="fixed top-0 left-0 right-0 z-50 h-0.5 bg-rule/10">

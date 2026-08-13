@@ -8,7 +8,11 @@ export const metadata = {
 
 export default function ScamCheckerPage() {
   return (
-    <div className="min-h-screen bg-paper py-12 px-4 sm:px-8">
+    <div className="min-h-screen bg-parchment-base grid-bg bg-grid-pattern relative py-12 px-4 sm:px-8">
+      {/* Background watermark */}
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-12 z-0 text-watermark font-display pointer-events-none select-none">
+        सुरक्षा
+      </div>
       <div className="max-w-3xl mx-auto mb-6 flex justify-between items-center">
         <Link
           href="/"

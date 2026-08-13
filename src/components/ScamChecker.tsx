@@ -50,7 +50,7 @@ export function ScamChecker() {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto border border-rule/40 bg-paper/95 backdrop-blur-md overflow-hidden shadow-2xl rounded-sm passbook-card">
+    <div className="w-full max-w-3xl mx-auto border-2 border-ink bg-paper backdrop-blur-md overflow-hidden deep-shadow relative z-10">
       {/* Header */}
       <div className="bg-ink text-paper p-6 relative overflow-hidden shadow-md">
         <div className="absolute inset-0 dotgrid-bg opacity-25 pointer-events-none" />

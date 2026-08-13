@@ -95,8 +95,12 @@ export function DashboardView({
     router.refresh();
   }
 
-  async function handleTradeSubmit(payload: { qty: number; stopLoss: number | null }) {
-    if (!selectedQuote) return;
+  async function handleTradeSubmit(payload: {
+    symbol: string;
+    side: TradeSide;
+    qty: number;
+    stopLoss: number | null;
+  }) {
     setTradeLoading(true);
     setTradeStatus(null);
 
@@ -105,8 +109,8 @@ export function DashboardView({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          symbol: selectedQuote.symbol,
-          side: tradeSide,
+          symbol: payload.symbol,
+          side: payload.side,
           qty: payload.qty,
           stopLoss: payload.stopLoss,
         }),
@@ -117,11 +121,11 @@ export function DashboardView({
 
       setTradeStatus({
         success: true,
-        message: `${tradeSide === "buy" ? "Bought" : "Sold"} ${payload.qty} shares of ${selectedQuote.symbol} @ ₹${Number(json.executedPrice).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        message: `${payload.side === "buy" ? "Bought" : "Sold"} ${payload.qty} shares of ${payload.symbol} @ ₹${Number(json.executedPrice).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       });
 
       router.refresh();
-      setTimeout(() => setActiveTab("ledger"), 1200);
+      setTimeout(() => setActiveTab("ledger"), 1500);
     } catch (err) {
       setTradeStatus({ success: false, message: err instanceof Error ? err.message : "Trade failed" });
     } finally {
