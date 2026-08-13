@@ -67,8 +67,9 @@ Guidelines:
           },
           body: JSON.stringify({
             messages: [{ role: "system", content: systemInstruction }, ...chatMessages],
-            model: "llama-3.3-70b-versatile",
+            model: "llama-3.1-8b-instant",
             temperature: 0.7,
+            max_tokens: 500,
           }),
         });
 
@@ -82,7 +83,7 @@ Guidelines:
           const errText = await groqRes.text();
           console.error("Groq API error:", groqRes.status, errText);
           return NextResponse.json({
-            reply: `⚠️ Groq API key error (${groqRes.status}): Invalid API Key. Please get a free Groq key at console.groq.com/keys or a free Gemini key at aistudio.google.com/app/apikey and paste it into .env.local!` + DISCLAIMER,
+            reply: `⚠️ Groq API key error (${groqRes.status}): Please check your GROK_API_KEY in .env.local!` + DISCLAIMER,
           });
         }
       } catch (err) {
