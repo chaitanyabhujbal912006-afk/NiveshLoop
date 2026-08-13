@@ -59,22 +59,42 @@ export async function POST(req: NextRequest) {
 
     const lowerMsg = lastUserMessage.toLowerCase();
 
-    // Check if user is asking for specific stock purchase advice
+    // Safety check: Refuse personalized buy/sell directives
     if (
       lowerMsg.includes("which stock should i buy") ||
       lowerMsg.includes("give me stock tips") ||
-      lowerMsg.includes("tell me what to buy") ||
+      lowerMsg.includes("tell me what stock to buy") ||
       lowerMsg.includes("best stock to buy today")
     ) {
       return NextResponse.json({
         reply:
-          "I am an educational AI tutor for NiveshLoop and cannot recommend specific stock purchases or give financial advice. Instead, I can help you understand fundamental metrics like P/E ratios, revenue growth, diversification, and order types so you can build your own judgment!" +
+          "I am Nivesh AI, an educational mentor for NiveshLoop. I cannot recommend specific stock purchases or give financial advice. Instead, I can help you understand fundamental metrics like P/E ratios, revenue growth, sector diversification, and order types so you can form your own investment judgment!" +
           DISCLAIMER,
       });
     }
 
-    // Try Gemini API if GEMINI_API_KEY is available
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+
+    // Build multi-turn context for Gemini API
+    const geminiContents = messages
+      .filter((m) => m.role === "user" || m.role === "assistant")
+      .map((m) => ({
+        role: m.sender === "user" || m.role === "user" ? "user" : "model",
+        parts: [{ text: m.content }],
+      }));
+
+    if (geminiContents.length === 0) {
+      geminiContents.push({ role: "user", parts: [{ text: lastUserMessage }] });
+    }
+
+    const systemInstruction = `You are Nivesh AI, an enthusiastic, highly intelligent, and helpful educational assistant for NiveshLoop (a free Indian stock market learning web app with simulated trading).
+Answer the user's question dynamically, conversationally, and clearly in simple, engaging terms suitable for beginners.
+Guidelines:
+1. Explain stock market concepts (NSE/BSE, NIFTY 50, SIP, P/E ratio, Stop-Loss, Index Funds, Limit Orders, Market Orders, Technical Analysis, Financial News).
+2. Maintain context of the ongoing conversation like a real AI assistant.
+3. Never give personalized financial advice, price predictions, or specific stock buy recommendations.
+4. Use formatting (bullet points, bold text) for readability. Keep answers clear and under 200 words.`;
+
     if (apiKey) {
       try {
         const geminiRes = await fetch(
@@ -83,23 +103,14 @@ export async function POST(req: NextRequest) {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              contents: [
-                {
-                  role: "user",
-                  parts: [
-                    {
-                      text: `You are Nivesh AI, an encouraging and expert educational assistant for NiveshLoop (a free Indian stock market learning app with simulated trading).
-Answer the user's question clearly, concisely, and in simple terms suitable for beginners.
-Rules:
-1. Explain Indian stock market concepts (NSE/BSE, NIFTY 50, SIP, P/E, Stop-Loss, Index Funds, Limit Orders).
-2. Never give personalized financial advice, price predictions, or specific stock buy recommendations.
-3. Keep response under 150 words.
-
-User question: ${lastUserMessage}`,
-                    },
-                  ],
-                },
-              ],
+              system_instruction: {
+                parts: [{ text: systemInstruction }],
+              },
+              contents: geminiContents,
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 500,
+              },
             }),
           }
         );
@@ -112,11 +123,11 @@ User question: ${lastUserMessage}`,
           }
         }
       } catch (err) {
-        console.warn("Gemini API call failed, using knowledge base fallback", err);
+        console.warn("Gemini API call failed, falling back to smart educational engine", err);
       }
     }
 
-    // Knowledge base matching fallback
+    // Dynamic educational response generator fallback (when API key is not configured)
     const matched = KNOWLEDGE_BASE.find((item) =>
       item.keywords.some((kw) => lowerMsg.includes(kw))
     );
@@ -125,12 +136,17 @@ User question: ${lastUserMessage}`,
       return NextResponse.json({ reply: matched.answer + DISCLAIMER });
     }
 
-    // Default friendly assistant response
-    const defaultReply =
-      `Great question about **${lastUserMessage.slice(0, 40)}...**! In stock market investing, key principles to remember are: 1) Never invest all your money in a single company (diversify), 2) Use Stop-Loss orders to cap downside risk, and 3) Focus on long-term value rather than daily price noise. Explore Lesson 1 to Lesson 15 on NiveshLoop to learn more!` +
-      DISCLAIMER;
+    // Dynamic contextual assistant response
+    const dynamicReply = `That's an interesting question about **"${lastUserMessage}"**!
 
-    return NextResponse.json({ reply: defaultReply });
+In stock market investing, here are key fundamentals to consider:
+- **Understand the Core Business**: Look at what the company actually sells and its earnings growth.
+- **Risk Management**: Always use Stop-Loss protection and diversify across multiple sectors (e.g. IT, Banking, Energy).
+- **Long-Term Thinking**: Focus on business quality rather than short-term price noise.
+
+Feel free to ask me to explain any specific concept like **P/E ratio**, **Stop-Loss**, **Limit Orders**, or **Index Funds**!` + DISCLAIMER;
+
+    return NextResponse.json({ reply: dynamicReply });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Failed to process message" },
