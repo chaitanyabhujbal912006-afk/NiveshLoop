@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 interface ChatMessage {
-  role: "user" | "assistant" | "system";
+  role?: "user" | "assistant" | "system";
+  sender?: "user" | "ai" | "assistant";
   content: string;
 }
 
@@ -73,9 +74,57 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    const grokKey = process.env.GROK_API_KEY || process.env.XAI_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 
-    // Build multi-turn context for Gemini API
+    const systemInstruction = `You are Nivesh AI, an enthusiastic, highly intelligent, and helpful educational assistant for NiveshLoop (a free Indian stock market learning web app with simulated trading).
+Answer the user's question dynamically, conversationally, and clearly in simple, engaging terms suitable for beginners.
+Guidelines:
+1. Explain stock market concepts (NSE/BSE, NIFTY 50, SIP, P/E ratio, Stop-Loss, Index Funds, Limit Orders, Market Orders, Technical Analysis, Financial News).
+2. Maintain context of the ongoing conversation like a real AI assistant.
+3. Never give personalized financial advice, price predictions, or specific stock buy recommendations.
+4. Use formatting (bullet points, bold text) for readability. Keep answers clear and under 200 words.`;
+
+    // 1. Try Grok (xAI) API if GROK_API_KEY is available
+    if (grokKey) {
+      try {
+        const grokMessages = [
+          { role: "system", content: systemInstruction },
+          ...messages
+            .filter((m) => m.role === "user" || m.role === "assistant")
+            .map((m) => ({
+              role: m.sender === "user" || m.role === "user" ? "user" : "assistant",
+              content: m.content,
+            })),
+        ];
+
+        const grokRes = await fetch("https://api.x.ai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${grokKey}`,
+          },
+          body: JSON.stringify({
+            messages: grokMessages,
+            model: "grok-beta",
+            stream: false,
+            temperature: 0.7,
+          }),
+        });
+
+        if (grokRes.ok) {
+          const grokData = await grokRes.json();
+          const text = grokData?.choices?.[0]?.message?.content;
+          if (text) {
+            return NextResponse.json({ reply: text + DISCLAIMER });
+          }
+        }
+      } catch (err) {
+        console.warn("Grok API call failed, trying Gemini API / fallback", err);
+      }
+    }
+
+    // 2. Try Gemini API if GEMINI_API_KEY is available
     const geminiContents = messages
       .filter((m) => m.role === "user" || m.role === "assistant")
       .map((m) => ({
@@ -87,18 +136,10 @@ export async function POST(req: NextRequest) {
       geminiContents.push({ role: "user", parts: [{ text: lastUserMessage }] });
     }
 
-    const systemInstruction = `You are Nivesh AI, an enthusiastic, highly intelligent, and helpful educational assistant for NiveshLoop (a free Indian stock market learning web app with simulated trading).
-Answer the user's question dynamically, conversationally, and clearly in simple, engaging terms suitable for beginners.
-Guidelines:
-1. Explain stock market concepts (NSE/BSE, NIFTY 50, SIP, P/E ratio, Stop-Loss, Index Funds, Limit Orders, Market Orders, Technical Analysis, Financial News).
-2. Maintain context of the ongoing conversation like a real AI assistant.
-3. Never give personalized financial advice, price predictions, or specific stock buy recommendations.
-4. Use formatting (bullet points, bold text) for readability. Keep answers clear and under 200 words.`;
-
-    if (apiKey) {
+    if (geminiKey) {
       try {
         const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
